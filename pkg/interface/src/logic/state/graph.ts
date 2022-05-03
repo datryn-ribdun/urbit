@@ -128,12 +128,7 @@ const useGraphState = createState<GraphState>('Graph', (set, get) => ({
     data['graph-update'].fetch = true;
     GraphReducer(data);
   },
-  getNewest: async (
-    ship: string,
-    name: string,
-    count: number,
-    index = ''
-  ) => {
+  getNewest: async (ship: string, name: string, count: number, index = '') => {
     const data = await airlock.scry(getNewest(ship, name, count, index));
     data['graph-update'].fetch = true;
     GraphReducer(data);

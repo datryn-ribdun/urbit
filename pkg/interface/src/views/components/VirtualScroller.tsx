@@ -25,7 +25,7 @@ const Scrollbar = styled(Box)`
   right: 0;
   height: 50px;
   position: absolute;
-  pointer: cursor;
+  cursor: pointer;
 `;
 
 interface RendererProps<K> {
@@ -107,6 +107,8 @@ export interface VirtualScrollerProps<K,V> {
    * default value for key type
    */
   keyBunt: K;
+
+  onScroll?: (event: SyntheticEvent<HTMLElement>) => void;
 }
 
 interface VirtualScrollerState<K> {
@@ -425,6 +427,9 @@ export default class VirtualScroller<K,V> extends Component<VirtualScrollerProps
   };
 
   onScroll(event: SyntheticEvent<HTMLElement>) {
+    if (this.props.onScroll) {
+      this.props.onScroll(event);
+    }
     this.updateScroll();
     if(!this.window) {
       // bail if we're going to adjust scroll anyway
@@ -441,7 +446,6 @@ export default class VirtualScroller<K,V> extends Component<VirtualScrollerProps
     const startOffset = this.startOffset();
 
     if (scrollTop < ZONE_SIZE) {
-      log('scroll', `Entered start zone ${scrollTop}`);
       if (startOffset === 0) {
         onStartReached && onStartReached();
         this.scrollLocked = true;
@@ -458,7 +462,6 @@ export default class VirtualScroller<K,V> extends Component<VirtualScrollerProps
       }
     } else if (scrollTop + windowHeight >= scrollHeight - ZONE_SIZE) {
       this.scrollLocked = false;
-      log('scroll', `Entered end zone ${scrollTop}`);
 
       const newOffset =
         clamp(startOffset + this.pageDelta, 0, this.props.data.size - this.pageSize);
@@ -634,7 +637,6 @@ export default class VirtualScroller<K,V> extends Component<VirtualScrollerProps
           bottom={!isTop ? '0' : undefined} ref={this.setScrollRef}
           backgroundColor="lightGray"
                      />)}
-
       <ScrollbarLessBox overflowY='scroll' ref={this.setWindow} onScroll={this.onScroll} style={{ ...style, ...{ transform }, 'WebkitOverflowScrolling': 'auto' }}>
         <Box style={{ transform, width: 'calc(100% - 4px)' }}>
           {(isTop ? !atStart : !atEnd) && (<Center height={5}>

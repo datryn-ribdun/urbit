@@ -154,7 +154,7 @@ export function FormGroup(props: { onReset?: () => void; } & PropFunc<typeof Box
         bottom="0px"
         p={3}
         gapX={2}
-        backgroundColor="white"
+        backgroundColor="transparent"
         borderTop={1}
         borderTopColor="washedGray"
       >

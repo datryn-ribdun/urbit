@@ -7,7 +7,6 @@ import React, {
   ReactElement, useCallback,
   useEffect, useMemo,
   useRef,
-
   useState
 } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -27,6 +26,15 @@ import { Portal } from '../Portal';
 import OmniboxInput from './OmniboxInput';
 import OmniboxResult from './OmniboxResult';
 import { selectLocalState } from '~/logic/state/local';
+import { leapCategories } from '~/types';
+import { postReactNativeMessage } from '~/logic/lib/reactNative';
+import { clearPushNotifications } from '~/logic/util/notifications';
+
+interface OmniboxProps {
+  show: boolean;
+  toggle: () => void;
+  notifications: number;
+}
 
 const SEARCHED_CATEGORIES = [
   'commands',
@@ -59,6 +67,25 @@ export function Omnibox(): ReactElement {
   const omniboxRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { omniboxShown: show, toggleOmnibox: toggle } = useLocalState(selOmnibox);
+  const settings = useSettingsState.getState();
+  const { putEntry } = settings;
+  const { notificationsCount } = useHarkState();
+  const [harkNotificationNum, setHarkNotificationNum] = useState(notificationsCount);
+
+  useEffect(() => {
+    if (notificationsCount === 0 && harkNotificationNum > 0) {
+      clearPushNotifications(settings['escape-app']['expo-token']);
+    }
+
+    setHarkNotificationNum(notificationsCount);
+  }, [notificationsCount]);
+
+  useEffect(() => {
+    // TODO: remove this in future versions
+    if (!leapConfig.categories.includes('settings')) {
+      putEntry('leap', 'categories', leapCategories);
+    }
+  }, []);
 
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<[] | [string, string]>([]);
@@ -167,13 +194,17 @@ export function Omnibox(): ReactElement {
         app === 'Links' ||
         app === 'Terminal' ||
         app === 'home' ||
-        app === 'notifications'
+        app === 'notifications' ||
+        app === 'settings' ||
+        app === 'logout'
       ) {
-        if(shift && app === 'profile') {
+        if (shift && app === 'profile') {
           // TODO: hacky, fix
           link = link.replace('~profile', '~landscape/messages/dm');
         }
-
+        if (app === 'logout') {
+          postReactNativeMessage({ type: 'logout' });
+        }
         if(link.startsWith('?')) {
           history.push({
             search: link

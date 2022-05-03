@@ -35,7 +35,7 @@ const { preview } = usePreview(resource);
       py={2}
       pr={2}
       cursor='pointer'
-      backgroundColor='white'
+      backgroundColor='transparent'
       borderColor={borderColor}
       opacity={preview ? '1' : '0.6'}
     >

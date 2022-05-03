@@ -47,13 +47,7 @@ export function NotebookRoutes(
           if (!graph) {
             return <Center height="100%"><LoadingSpinner /></Center>;
           }
-          return <Notebook
-            {...props}
-            graph={graph}
-            association={props.association}
-            rootUrl={rootUrl}
-            baseUrl={baseUrl}
-                 />;
+          return <Notebook {...props} graph={graph} rootUrl={rootUrl} baseUrl={baseUrl} />;
       }}
       />
       <Route

@@ -141,7 +141,7 @@ function GraphPermalink(
         await getNode(ship, name, index);
         setLoading(false);
       } catch (e) {
-        console.log(e);
+        console.warn(e);
         setLoading(false);
         setErrored(true);
       }
@@ -179,6 +179,7 @@ function GraphPermalink(
       maxWidth={full ? null : '500px'}
       border={full ? null : '1'}
       borderColor="lightGray"
+      color="black"
       borderRadius={2}
       onClick={(e) => {
         e.stopPropagation();

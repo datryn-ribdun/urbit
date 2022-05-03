@@ -25,7 +25,7 @@ export const SidebarItem = ({
     <HoverBoxLink
       to={to}
       selected={selected}
-      bg="white"
+      bg="transparent"
       bgActive="washedGray"
       display="flex"
       px={3}

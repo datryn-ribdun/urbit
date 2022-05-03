@@ -33,8 +33,17 @@ const DropdownOptions = styled(Box)`
   transition-timing-function: ease;
 `;
 
-export function Dropdown(props: DropdownProps): ReactElement {
-  const { children, options, offsetX = 0, offsetY = 0, flexShrink = 1 } = props;
+export function Dropdown({
+  children,
+  options,
+  alignX,
+  alignY,
+  width,
+  dropWidth,
+  offsetX = 0,
+  offsetY = 0,
+  flexShrink = 1
+}: DropdownProps): ReactElement {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const { pathname } = useLocation();
@@ -45,11 +54,11 @@ export function Dropdown(props: DropdownProps): ReactElement {
     if(!anchorRef.current) {
       return;
     }
-    const newCoords = getRelativePosition(anchorRef.current, props.alignX, props.alignY, offsetX, offsetY);
+    const newCoords = getRelativePosition(anchorRef.current, alignX, alignY, offsetX, offsetY);
     if(newCoords) {
       setCoords(newCoords);
     }
-  }, [setCoords, anchorRef.current, props.alignY, props.alignX]);
+  }, [setCoords, anchorRef.current, alignY, alignX]);
 
   useEffect(() => {
     if (!open) {
@@ -84,14 +93,14 @@ export function Dropdown(props: DropdownProps): ReactElement {
   }, []);
 
   return (
-    <Box flexShrink={flexShrink} position={open ? 'relative' : 'static'} minWidth={0} width={props?.width ? props.width : 'auto'}>
+    <Box flexShrink={flexShrink} position={open ? 'relative' : 'static'} minWidth={0} width={width ? width : 'auto'}>
       <ClickBox width='100%' ref={anchorRef} onClick={onOpen}>
         {children}
       </ClickBox>
       {open && (
         <Portal>
           <DropdownOptions
-            width={props?.dropWidth || 'max-content'}
+            width={dropWidth || 'max-content'}
             {...coords}
             ref={dropdownRef}
             onClick={onOptionsClick}

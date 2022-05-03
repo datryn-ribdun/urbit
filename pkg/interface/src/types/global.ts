@@ -6,5 +6,7 @@ declare global {
     ship: PatpNoSig;
     desk: string;
     hark: typeof useHarkState.getState;
+    isMobileApp: boolean;
+    bootstrapApi: Function;
   }
 }

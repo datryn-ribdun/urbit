@@ -7,13 +7,14 @@ interface HoverBoxProps {
   selected: boolean;
   bg: string;
   bgActive: string;
+  open: boolean;
 }
 export const HoverBox = styled(Box)<HoverBoxProps>`
   background-color: ${p =>
-    p.selected ? p.theme.colors[p.bgActive] : p.theme.colors[p.bg]};
-  pointer: cursor;
+    p.selected && !p.open ? p.theme.colors[p.bgActive] : p.theme.colors[p.bg]};
+  cursor: pointer;
   &:hover {
-    background-color: ${p => p.theme.colors[p.bgActive]};
+    background-color: ${p => p.open ? p.theme.colors[p.bg] : p.theme.colors[p.bgActive]};
   }
 `;
 

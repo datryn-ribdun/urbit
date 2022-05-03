@@ -348,9 +348,12 @@ const renderers = {
       </Text>
     );
   },
-  paragraph: ({ children }) => {
+  paragraph: ({ children, collapsed = false }) => {
+    const containerStyle = collapsed
+      ? { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxHeight: '2em' }
+      : {};
     return (
-      <Box display="block">
+      <Box display="block" {...containerStyle}>
         <Text
           fontSize={1}
           lineHeight="tall"
@@ -413,18 +416,28 @@ const renderers = {
   'graph-mention': (obj) => {
     return <Mention ship={obj.ship} emphasis={obj.emphasis} />;
   },
-  image: ({ url, tall }) => (
-    <Box mt="1" mb="2" flexShrink={0}>
-      <RemoteContent key={url} url={url} tall={tall} />
-    </Box>
+  image: ({ url, tall, collapsed = false }) => (
+    collapsed
+      ? <Text fontStyle="italic">Image</Text>
+      : <Box mt="1" mb="2" flexShrink={0}>
+        <RemoteContent key={url} url={url} tall={tall} />
+      </Box>
   ),
-  'graph-url': ({ url, tall }) => (
-    <Box mt={1} mb={2} flexShrink={0}>
-      <RemoteContent key={url} url={url} tall={tall} />
-    </Box>
-  ),
+  'graph-url': ({ url, tall, collapsed = false }) => {
+    if (collapsed && /(https?:\/\/.*\.(?:png|jpg|jpeg))/i.test(url)) {
+      return <Text fontStyle="italic">Image</Text>;
+    }
+    return (
+      <Box mt={1} mb={2} flexShrink={0}>
+        <RemoteContent key={url} url={url} tall={tall} />
+      </Box>
+    );
+  },
   'graph-reference': ({ reference, transcluded }) => {
     const { link } = referenceToPermalink({ reference });
+    if (transcluded > 1) {
+      return null;
+    }
     return (
       <Box my={2} flexShrink={0}>
         <PermalinkEmbed
@@ -474,9 +487,9 @@ export function Graphdown<T extends {} = {}>(
     <Renderer
       transcluded={transcluded}
       depth={depth}
+      tall={tall}
       {...rest}
       {...nodeRest}
-      tall={tall}
     >
       {children.map((c, idx) => (
         <Graphdown
@@ -506,6 +519,7 @@ export const GraphContent = React.memo((
     contents,
     tall = false,
     transcluded = 0,
+    collapsed = false,
     ...rest
   } = props;
   const [, ast] = stitchAsts(
@@ -514,7 +528,7 @@ export const GraphContent = React.memo((
     .map(contentToMdAst(tall)));
   return (
     <Box {...rest}>
-      <Graphdown transcluded={transcluded} ast={ast} tall={tall} />
+      <Graphdown {...{ transcluded, ast, tall, collapsed }} />
     </Box>
   );
 });

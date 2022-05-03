@@ -45,7 +45,6 @@ export function Note(props: NoteProps & RouteComponentProps) {
     props.history.push(rootUrl);
   };
 
-
   const comments = getComments(note);
   const [, title, , post] = getLatestRevision(note);
   const index = note.post.index.split('/');
@@ -55,7 +54,7 @@ export function Note(props: NoteProps & RouteComponentProps) {
     airlock.poke(markEachAsRead(toHarkPlace(association.resource), `/${index[1]}`));
     // Unread may be malformed, dismiss anyway
     // TODO: remove when %read-graph is implemented
-    airlock.poke(markEachAsRead(toHarkPlace(association.resource), `/1`));
+    airlock.poke(markEachAsRead(toHarkPlace(association.resource), '/1'));
   }, [association, props.note]);
 
   const adminLinks: JSX.Element[] = [];
@@ -63,14 +62,14 @@ export function Note(props: NoteProps & RouteComponentProps) {
   if (window.ship === note?.post?.author) {
     adminLinks.push(
       <Link to={`${baseUrl}/edit`}>
-        <Action backgroundColor="white">Update</Action>
+        <Action backgroundColor="transparent">Update</Action>
       </Link>
     );
   }
 
   if (window.ship === note?.post?.author || ourRole === 'admin') {
     adminLinks.push(
-      <Action backgroundColor="white" destructive onClick={deletePost}>
+      <Action backgroundColor="transparent" destructive onClick={deletePost}>
         Delete
       </Action>
     );
@@ -101,19 +100,19 @@ export function Note(props: NoteProps & RouteComponentProps) {
       </Link>
       <Col>
         <Text display="block" mb={2}>{title || ''}</Text>
-        <Row alignItems="center">
+        <Row alignItems="center" maxWidth="500px">
           <Author
             showImage
             isRelativeTime
             ship={post?.author}
             date={post?.['time-sent']}
             group={group}
-          >
-            <Row px={2} gapX={2} alignItems="flex-end" height="14px">
-              <Action bg="white" onClick={doCopy}>{copyDisplay}</Action>
-              {adminLinks}
-            </Row>
-          </Author>
+            maxNameWidth="225px"
+          />
+          <Row px={2} gapX={2} alignItems="flex-end" height="14px">
+            <Action bg="transparent" onClick={doCopy}>{copyDisplay}</Action>
+            {adminLinks}
+          </Row>
         </Row>
       </Col>
       <NoteContent post={post} />

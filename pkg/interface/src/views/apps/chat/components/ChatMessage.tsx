@@ -1,26 +1,25 @@
 /* eslint-disable max-lines-per-function */
-import { BaseImage, Box, Col, Icon, Row, Rule, Text } from '@tlon/indigo-react';
+import { BaseImage, Box, Icon, Row, Rule, Text } from '@tlon/indigo-react';
 import { Contact, MentionContent, Post } from '@urbit/api';
 import bigInt from 'big-integer';
 import moment from 'moment';
-import React, {
-  Ref,
-  useEffect,
-  useMemo, useState
-} from 'react';
+import React, { Ref, useCallback, useEffect, useMemo, useState } from 'react';
 import VisibilitySensor from 'react-visibility-sensor';
+import { IMAGE_NOT_FOUND } from '~/logic/constants/links';
 import { useIdlingState } from '~/logic/lib/idling';
+import { IS_MOBILE } from '~/logic/lib/platform';
 import { Sigil } from '~/logic/lib/sigil';
-import { useCopy } from '~/logic/lib/useCopy';
-import {
-  cite, daToUnix, useHovering, uxToHex
-} from '~/logic/lib/util';
+import { citeNickname, daToUnix, useHovering, uxToHex } from '~/logic/lib/util';
 import { useContact } from '~/logic/state/contact';
 import { useDark } from '~/logic/state/join';
+import usePalsState from '~/logic/state/pals';
 import useSettingsState, { selectCalmState, useShowNickname } from '~/logic/state/settings';
-import { Dropdown } from '~/views/components/Dropdown';
 import ProfileOverlay from '~/views/components/ProfileOverlay';
 import { GraphContent } from '~/views/landscape/components/Graph/GraphContent';
+import { LinkCollection } from '../ChatResource';
+import { CodeMirrorShim } from './ChatEditor';
+import { LikeIndicator } from './LikeIndicator';
+import MessageActions from './MessageActions';
 
 export const DATESTAMP_FORMAT = '[~]YYYY.M.D';
 
@@ -60,6 +59,7 @@ export const MessageAuthor = React.memo<any>(({
   ...props
 }) => {
   const dark = useDark();
+  const { pals } = usePalsState();
   let contact: Contact | null = useContact(`~${msg.author}`);
 
   const date = daToUnix(bigInt(msg.index.split('/').reverse()[0]));
@@ -73,9 +73,9 @@ export const MessageAuthor = React.memo<any>(({
       ? contact
       : null;
 
-  const showNickname = useShowNickname(contact);
+  const showNickname = useShowNickname(contact) && (msg.author.trim() !== contact?.nickname?.replace('~', '')?.trim());
   const { hideAvatars } = useSettingsState(selectCalmState);
-  const shipName = showNickname && contact?.nickname || cite(msg.author) || `~${msg.author}`;
+  const shipName = citeNickname(msg.author, showNickname, contact?.nickname);
   const color = contact
     ? `#${uxToHex(contact.color)}`
     : dark
@@ -87,9 +87,9 @@ export const MessageAuthor = React.memo<any>(({
     ? 'mix-blend-diff'
     : 'mix-blend-darken';
 
-  const { copyDisplay, doCopy, didCopy } = useCopy(`~${msg.author}`, shipName);
   const { hovering, bind } = useHovering();
-  const nameMono = !(showNickname || didCopy);
+  const nameMono = !showNickname;
+  const isPal = Boolean(pals.outgoing[msg.author]?.ack);
 
   const img =
     contact?.avatar && !hideAvatars ? (
@@ -101,6 +101,10 @@ export const MessageAuthor = React.memo<any>(({
         height={24}
         width={24}
         borderRadius={1}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null; // prevents looping
+          currentTarget.src = IMAGE_NOT_FOUND;
+        }}
       />
     ) : (
       <Box
@@ -125,18 +129,6 @@ export const MessageAuthor = React.memo<any>(({
     );
   return (
     <Box pb="1" display='flex' alignItems='center'>
-      <Box
-       height={24}
-        pr={2}
-        mt={'1px'}
-        pl={props.transcluded ? '11px' : '12px'}
-        cursor='pointer'
-        position='relative'
-      >
-        <ProfileOverlay cursor='auto' ship={msg.author}>
-          {img}
-        </ProfileOverlay>
-      </Box>
       <Box flexGrow={1} display='block' className='clamp-message' {...bind}>
         <Box
           flexShrink={0}
@@ -144,21 +136,39 @@ export const MessageAuthor = React.memo<any>(({
           pt={1}
           pb={1}
           display='flex'
-          alignItems='baseline'
+          alignItems='center'
         >
-          <Text
-            fontSize={1}
-            mr={2}
-            flexShrink={1}
-            mono={nameMono}
-            fontWeight={nameMono ? '400' : '500'}
+          <Box
+            height={24}
+            pr={2}
+            mt={'1px'}
+            pl={props.transcluded ? '11px' : '12px'}
             cursor='pointer'
-            onClick={doCopy}
-            title={showNickname ? `~${msg.author}` : contact?.nickname}
+            position='relative'
+            overflow="hidden"
           >
-            {copyDisplay}
-          </Text>
-          <Text whiteSpace='nowrap' flexShrink={0} fontSize={0} gray>
+            <ProfileOverlay cursor='auto' ship={msg.author}>
+              <Row alignItems="center">
+                {img}
+                <Text
+                  fontSize={1}
+                  ml={2}
+                  mt="2px"
+                  flexShrink={1}
+                  mono={nameMono}
+                  fontWeight={nameMono ? '400' : '500'}
+                  cursor='pointer'
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  whiteSpace="nowrap"
+                >
+                  {shipName}
+                </Text>
+                {isPal && <Icon icon="Users" size={12} ml={2} mt="3px" />}
+              </Row>
+            </ProfileOverlay>
+          </Box>
+          <Text whiteSpace='nowrap' flexShrink={0} fontSize={0} mt="5px" gray>
             {timestamp}
           </Text>
           <Text
@@ -167,6 +177,7 @@ export const MessageAuthor = React.memo<any>(({
             whiteSpace='nowrap'
             gray
             ml={2}
+            mt="5px"
             display={['none', hovering ? 'block' : 'none']}
           >
             {datestamp}
@@ -179,44 +190,75 @@ export const MessageAuthor = React.memo<any>(({
 MessageAuthor.displayName = 'MessageAuthor';
 
 type MessageProps = { timestamp: string; timestampHover: boolean; }
-  & Pick<ChatMessageProps, 'msg' | 'transcluded' | 'showOurContact'>
+  & Pick<ChatMessageProps, 'msg' | 'transcluded' | 'showOurContact' | 'isReply' | 'onLike' | 'inputRef'>
 
 export const Message = React.memo(({
   timestamp,
   msg,
   timestampHover,
   transcluded,
-  showOurContact
+  showOurContact,
+  inputRef,
+  isReply = false
 }: MessageProps) => {
   const { hovering, bind } = useHovering();
+  // TODO: add an additional check for links-only messages to remove the Triangle icon
+  const defaultCollapsed = isReply && transcluded > 0;
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+
   return (
-    <Box pl="44px" pr={4} width="100%" position='relative'>
-      {timestampHover ? (
-        <Text
-          display={hovering ? 'block' : 'none'}
-          position='absolute'
-          width='36px'
-          textAlign='right'
-          left={0}
-          top='2px'
-          lineHeight="tall"
-          fontSize={0}
-          whiteSpace='nowrap'
-          gray
-        >
-          {timestamp}
-        </Text>
-      ) : (
-        <></>
+    <Row width="100%" onClick={(e) => {
+      if (collapsed) {
+        e.preventDefault();
+        e.stopPropagation();
+        setCollapsed(!collapsed);
+      }
+    }}
+    onMouseEnter={() => inputRef?.current?.getInputField().blur()}
+    >
+      {defaultCollapsed && (
+        <Icon
+          ml="12px"
+          mr="8px"
+          p={1}
+          display="block"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setCollapsed(!collapsed);
+          }}
+          icon={collapsed ? 'TriangleEast' : 'TriangleSouth'}
+        />
       )}
-      <GraphContent
-        {...bind}
-        width="100%"
-        contents={msg.contents}
-        transcluded={transcluded}
-        showOurContact={showOurContact}
-      />
-    </Box>
+      <Box pl={defaultCollapsed ? '0px' : '44px'} pr={4} width="calc(100% - 44px)" position='relative'>
+        {timestampHover ? (
+          <Text
+            display={hovering ? 'block' : 'none'}
+            position='absolute'
+            width='36px'
+            textAlign='right'
+            left={0}
+            top='2px'
+            lineHeight="tall"
+            fontSize={0}
+            whiteSpace='nowrap'
+            gray
+          >
+            {timestamp}
+          </Text>
+        ) : (
+          <></>
+        )}
+        <GraphContent
+          {...bind}
+          width="100%"
+          contents={msg.contents}
+          transcluded={transcluded}
+          showOurContact={showOurContact}
+          collapsed={collapsed}
+        />
+      </Box>
+    </Row>
   );
 });
 
@@ -263,102 +305,25 @@ export const UnreadMarker = React.forwardRef(
   }
 );
 
-const MessageActionItem = (props) => {
-  return (
-    <Row
-      color='black'
-      cursor='pointer'
-      fontSize={1}
-      fontWeight='500'
-      px={3}
-      py={2}
-      onClick={props.onClick}
-    >
-      <Text fontWeight='500' color={props.color}>
-        {props.children}
-      </Text>
-    </Row>
-  );
-};
-
-const MessageActions = ({ onReply, onDelete, msg, isAdmin, permalink }) => {
-  const isOwn = () => msg.author === window.ship;
-  const { doCopy, copyDisplay } = useCopy(permalink, 'Copy Message Link');
-  const showCopyMessageLink = Boolean(permalink);
-  const showDelete = (isAdmin || isOwn()) && onDelete;
-  const showDropdown = showCopyMessageLink || showDelete;
-
-  return (
-    <Box
-      borderRadius={2}
-      backgroundColor='white'
-      border='1px solid'
-      borderColor='lightGray'
-      position='absolute'
-      top='-16px'
-      right={2}
-    >
-      <Row>
-        <Box
-          padding={2}
-          size={5}
-          cursor='pointer'
-          onClick={() => onReply(msg)}
-        >
-          <Icon icon='Chat' size={3} />
-        </Box>
-        {showDropdown && (
-          <Dropdown
-            dropWidth='250px'
-            width='auto'
-            alignY='top'
-            alignX='right'
-            flexShrink={0}
-            offsetY={8}
-            offsetX={-24}
-            options={
-              <Col
-                py={2}
-                backgroundColor='white'
-                color='washedGray'
-                border={1}
-                borderRadius={2}
-                borderColor='lightGray'
-                boxShadow='0px 0px 0px 3px'
-              >
-                <MessageActionItem onClick={() => onReply(msg)}>
-                  Reply
-                </MessageActionItem>
-                {showCopyMessageLink && (
-                  <MessageActionItem onClick={doCopy}>
-                    {copyDisplay}
-                  </MessageActionItem>
-                )}
-                {showDelete && (
-                  <MessageActionItem onClick={e => onDelete(msg)} color='red'>
-                    Delete Message
-                  </MessageActionItem>
-                )}
-              </Col>
-            }
-          >
-            <Box padding={2} size={5} cursor='pointer'>
-              <Icon icon='Menu' size={3} />
-            </Box>
-          </Dropdown>
-        )}
-      </Row>
-    </Box>
-  );
-};
-
 const MessageWrapper = (props) => {
+  const { transcluded, hideHover, highlighted, likers, didLike, msg, onLike } = props;
   const { hovering, bind } = useHovering();
-  const showHover = (props.transcluded === 0) && hovering && !props.hideHover;
+  const showHover = (transcluded === 0) && hovering && !hideHover;
+  const dark = useDark();
+  const [isLiked, setIsLiked] = useState(didLike);
+
+  const likeMessage = useCallback((msg) => {
+    if (isLiked && !didLike) {
+      return;
+    }
+    onLike(msg);
+    setIsLiked(!isLiked);
+  }, [isLiked, didLike, onLike]);
+
   return (
     <Box
-      py={props.transcluded ? '2px' : '1'}
-      backgroundColor={props.highlighted
+      py={transcluded ? '2px' : '1'}
+      backgroundColor={highlighted
         ? showHover ? 'lightBlue' : 'washedBlue'
         : showHover ? 'washedGray' : 'transparent'
       }
@@ -366,7 +331,8 @@ const MessageWrapper = (props) => {
       {...bind}
     >
       {props.children}
-      {showHover ? <MessageActions {...props} /> : null}
+      {onLike && <LikeIndicator {...{ transcluded, isLiked, didLike, dark, likers, showLikers: IS_MOBILE && hovering }} onLike={() => likeMessage(msg)} />}
+      {showHover ? <MessageActions {...{ ...props, onLike: onLike && likeMessage }} /> : null}
     </Box>
   );
 };
@@ -379,18 +345,23 @@ interface ChatMessageProps {
   permalink?: string;
   transcluded?: number;
   isAdmin?: boolean;
+  isReply?: boolean;
   className?: string;
   isPending?: boolean;
   style?: unknown;
   isLastMessage?: boolean;
-  dismissUnread?: () => void;
   highlighted?: boolean;
   renderSigil?: boolean;
   hideHover?: boolean;
+  showOurContact: boolean;
+  dismissUnread?: () => void;
   innerRef: (el: HTMLDivElement | null) => void;
   onReply?: (msg: Post) => void;
-  showOurContact: boolean;
   onDelete?: () => void;
+  onLike?: (msg: Post) => void;
+  onBookmark?: (msg: Post, permalink: string, collection: LinkCollection, add: boolean) => void,
+  inputRef: React.MutableRefObject<CodeMirrorShim>,
+  collections: LinkCollection[],
 }
 const emptyCallback = () => {};
 
@@ -405,10 +376,15 @@ function ChatMessage(props: ChatMessageProps) {
     style,
     isLastMessage,
     isAdmin,
+    inputRef,
     showOurContact,
     hideHover,
     dismissUnread = () => null,
-    permalink = ''
+    permalink = '',
+    onLike,
+    onBookmark,
+    isReply = false,
+    collections
   } = props;
 
   if (typeof msg === 'string' || !msg) {
@@ -458,6 +434,11 @@ function ChatMessage(props: ChatMessageProps) {
     [date, renderSigil]
   );
 
+  const likers = msg.signatures
+    .map(({ ship }) => ship)
+    .filter((ship, ind, arr) => ship !== msg.author && arr.indexOf(ship) === ind);
+  const didLike = Boolean(msg.author !== window.ship && msg.signatures.find(({ ship }) => ship === window.ship));
+
   const messageProps = {
     msg,
     timestamp,
@@ -468,16 +449,18 @@ function ChatMessage(props: ChatMessageProps) {
     transcluded,
     onReply,
     onDelete,
-    isAdmin
+    onLike,
+    onBookmark,
+    isAdmin,
+    likers,
+    didLike,
+    collections
   };
 
   const message = useMemo(() => (
     <Message
-      msg={msg}
-      timestamp={timestamp}
       timestampHover={!renderSigil}
-      transcluded={transcluded}
-      showOurContact={showOurContact}
+      {...{ msg, timestamp, transcluded, showOurContact, isReply, inputRef }}
     />
   ), [renderSigil, msg, timestamp, transcluded, showOurContact]);
 

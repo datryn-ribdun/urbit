@@ -98,7 +98,7 @@ export function Notification(props: {
     } else if (redirectFromPlacePath) {
       history.push(redirectFromPlacePath);
     } else {
-      console.log('no redirect');
+      console.warn('no redirect');
     }
   };
 

@@ -87,7 +87,7 @@ export function GroupAdminSettings(props: GroupAdminSettingsProps) {
 
       actions.setStatus({ success: null });
     } catch (e) {
-      console.log(e);
+      console.warn(e);
       actions.setStatus({ error: e.message });
     }
   };

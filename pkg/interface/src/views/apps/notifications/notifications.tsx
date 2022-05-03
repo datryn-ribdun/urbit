@@ -68,7 +68,7 @@ export default function NotificationsScreen(): ReactElement {
               <Helmet defer={false}>
                 <title>
                   {notificationsCount ? `(${String(notificationsCount)}) ` : ''}
-                  Groups - Notifications
+                  Notifications
                 </title>
               </Helmet>
               <Body>

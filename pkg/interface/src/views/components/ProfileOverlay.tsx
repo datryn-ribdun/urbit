@@ -1,29 +1,25 @@
-import {
-  BaseImage, Box,
-
-  BoxProps,
-  Center, Col,
-
-  Icon, Row,
-
-  Text
-} from '@tlon/indigo-react';
-import { cite, uxToHex } from '@urbit/api';
-import shallow from 'zustand/shallow';
-import _ from 'lodash';
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import VisibilitySensor from 'react-visibility-sensor';
 import styled from 'styled-components';
+import shallow from 'zustand/shallow';
+import _ from 'lodash';
+
+import { BaseImage, Box, BoxProps, Center, Col, Icon, Row, Text } from '@tlon/indigo-react';
+import { uxToHex } from '@urbit/api';
 import { getRelativePosition } from '~/logic/lib/relativePosition';
 import { Sigil } from '~/logic/lib/sigil';
 import { useCopy } from '~/logic/lib/useCopy';
 import { useOutsideClick } from '~/logic/lib/useOutsideClick';
 import { useContact } from '~/logic/state/contact';
 import useSettingsState, { SettingsState, useShowNickname } from '~/logic/state/settings';
+import { citeNickname } from '~/logic/lib/util';
+import { IMAGE_NOT_FOUND } from '~/logic/constants/links';
 import { Portal } from './Portal';
 import { ProfileStatus } from './ProfileStatus';
 import RichText from './RichText';
+import { PalsProfileInfo } from './Pals/PalsProfileInfo';
+import { isMobile } from '../apps/chat/components/ChatEditor';
 
 export const OVERLAY_HEIGHT = 250;
 const FixedOverlay = styled(Col)`
@@ -34,14 +30,21 @@ const FixedOverlay = styled(Col)`
   transition: all 0.1s ease-out;
 `;
 
-interface ProfileOverlayProps extends BoxProps {
-  /**
-   * A valid patp (without sig)
-   */
-  ship: string,
-  children?: ReactNode,
-  color?: string,
-}
+export const ActionRow = styled(Row)`
+  padding: 4px;
+  padding-left: 6px;
+  width: 80%;
+  cursor: pointer;
+  &:hover {
+    background-color: ${p => p.theme.colors.washedGray};
+  }
+`;
+
+type ProfileOverlayProps = BoxProps & {
+  ship: string;
+  children?: ReactNode;
+  color?: string;
+};
 
 const selSettings = (s: SettingsState) => [s.calm.hideAvatars, s.calm.hideNicknames];
 
@@ -75,7 +78,7 @@ const ProfileOverlay = (props: ProfileOverlayProps) => {
   }, [_setOpen]);
 
   useEffect(() => {
-    if(!visible) {
+    if (!visible && !isMobile) {
       setClosed();
     }
   }, [visible]);
@@ -96,7 +99,7 @@ const ProfileOverlay = (props: ProfileOverlayProps) => {
           outer,
           spaceAtRight ? 'left' : 'right',
           spaceAtTop ? 'bottom' : 'top',
-          -1* outer.clientWidth,
+          0,
           -1 * outer.clientHeight
         ));
       }
@@ -121,6 +124,10 @@ const ProfileOverlay = (props: ProfileOverlayProps) => {
         height={60}
         width={60}
         borderRadius={2}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null; // prevents looping
+          currentTarget.src = IMAGE_NOT_FOUND;
+        }}
       />
     ) : (
       <Box size={60} borderRadius={2} backgroundColor={color}>
@@ -148,84 +155,83 @@ const ProfileOverlay = (props: ProfileOverlayProps) => {
         boxShadow='0px 0px 0px 3px'
         zIndex={3}
         fontSize={0}
-        height='250px'
-        width='250px'
+        width='300px'
         padding={3}
-        justifyContent='center'
       >
-        <Row color='black' padding={3} position='absolute' top={0} left={0}>
-           {!isOwn && (
-             <Icon
-               icon='Chat'
-               size={16}
-               cursor='pointer'
-               onClick={() => history.push(`/~landscape/messages/dm/~${ship}`)}
-             />
-           )}
-         </Row>
-        <Box
-          alignSelf='center'
-          height='72px'
+        <Row
+          minHeight='60px'
           cursor='pointer'
           onClick={() => history.push(`/~profile/~${ship}`)}
           overflow='hidden'
           borderRadius={2}
         >
-          {img}
-        </Box>
-        <Col
-          position='absolute'
-          overflow='hidden'
-          minWidth={0}
-          width='100%'
-          padding={3}
-          bottom={0}
-          left={0}
-        >
-          <Row width='100%'>
-            <Text
-              fontWeight='600'
-              mono={!showNickname}
-              textOverflow='ellipsis'
-              overflow='hidden'
-              whiteSpace='pre'
-              marginBottom={0}
-              cursor='pointer'
-              display={didCopy ? 'none' : 'block'}
-              onClick={doCopy}
+          <Box height="60px" width="60px">
+            {img}
+          </Box>
+          <Col ml={2} alignSelf="center">
+            <Row onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  doCopy();
+                }}
             >
-              {showNickname ? contact?.nickname : cite(ship)}
-            </Text>
-            <Text
-              fontWeight='600'
-              marginBottom={0}
-            >
-              {copyDisplay}
-            </Text>
-          </Row>
-          {isOwn ? (
-            <ProfileStatus
-              ship={`~${ship}`}
-              contact={contact}
-            />
-          ) : (
-            <RichText
-              display='inline-block'
-              width='100%'
-              minWidth={0}
-              textOverflow='ellipsis'
-              overflow='hidden'
-              whiteSpace='pre'
-              mb={0}
-              disableRemoteContent
-              gray
-              title={contact?.status ? contact.status : ''}
-            >
-              {contact?.status ? contact.status : ''}
-            </RichText>
-          )}
-        </Col>
+              <Text
+                fontWeight='600'
+                mono={!showNickname}
+                overflow='hidden'
+                marginBottom={0}
+                cursor='pointer'
+                display={didCopy ? 'none' : 'block'}
+              >
+                {citeNickname(ship, showNickname, contact?.nickname)}
+              </Text>
+              <Text
+                fontWeight='600'
+                marginBottom={0}
+              >
+                {copyDisplay}
+              </Text>
+            </Row>
+            {isOwn ? (
+              <ProfileStatus
+                ship={`~${ship}`}
+                contact={contact}
+              />
+            ) : (
+              <RichText
+                display='inline-block'
+                minWidth={0}
+                mb={0}
+                disableRemoteContent
+                gray
+                title={contact?.status ? contact.status : ''}
+              >
+                {contact?.status ? contact.status : ''}
+              </RichText>
+            )}
+          </Col>
+        </Row>
+        {!isOwn && (
+          <>
+            <ActionRow mt={2} onClick={() => history.push(`/~landscape/messages/dm/~${ship}`)}>
+              <Icon icon='Chat' size={16} mr={2} />
+              <Text>Message</Text>
+            </ActionRow>
+            <PalsProfileInfo ship={ship} />
+          </>
+        )}
       </FixedOverlay>
+      {isMobile && (
+        <Box
+          position="fixed"
+          top="0"
+          bottom="0"
+          left="0"
+          right="0"
+          zIndex={0}
+          onClick={setClosed}
+        />
+      )}
     </Portal>
     )}
   </Box>

@@ -60,6 +60,7 @@ export function LinkDetail(props: LinkDetailProps) {
             ship={post.author}
             showImage
             date={post['time-sent']}
+            maxNameWidth="220px"
           />
         </Col>
         <Col

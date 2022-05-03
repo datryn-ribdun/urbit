@@ -32,7 +32,11 @@ export interface SettingsState {
     backgroundType: 'none' | 'url' | 'color';
     background?: string;
     dark: boolean;
-    theme: 'light' | 'dark' | 'auto';
+    theme: 'light' | 'dark' | 'auto' | 'custom';
+    sans: string;
+    border: string;
+    white: string;
+    black: string;
   };
   calm: {
     hideNicknames: boolean;
@@ -49,10 +53,16 @@ export interface SettingsState {
   leap: {
     categories: LeapCategories[];
   };
+  bookmarks: { [key: string]: string };
+  groupSorter: { order: string };
+  pushNotifications: { pushNotificationDetails: boolean };
 }
 
-export const selectSettingsState = <K extends keyof (SettingsState & BaseState<SettingsState>)>(keys: K[]) =>
-  f.pick<BaseState<SettingsState> & SettingsState, K>(keys);
+export const selectSettingsState = <
+  K extends keyof (SettingsState & BaseState<SettingsState>)
+>(
+  keys: K[]
+) => f.pick<BaseState<SettingsState> & SettingsState, K>(keys);
 
 export const selectCalmState = (s: SettingsState) => s.calm;
 
@@ -66,7 +76,11 @@ const useSettingsState = createState<SettingsState>(
       backgroundType: 'none',
       background: undefined,
       dark: false,
-      theme: 'auto'
+      theme: 'auto',
+      sans: 'Inter',
+      white: 'FFFFFF',
+      black: '000000',
+      border: '1px solid'
     },
     calm: {
       hideNicknames: false,
@@ -93,10 +107,22 @@ const useSettingsState = createState<SettingsState>(
       hideSidebar: 'ctrl+\\',
       readGroup: 'shift+Escape'
     },
+    bookmarks: {},
+    groupSorter: {
+      order: JSON.stringify([])
+    },
+    pushNotifications: {
+      pushNotificationDetails: false
+    },
+    'escape-app': {
+      'expo-token': ''
+    },
     getAll: async () => {
-      const { desk } = await airlock.scry(getDeskSettings((window as any).desk));
+      const { desk } = await airlock.scry(
+        getDeskSettings((window as any).desk)
+      );
       get().set((s) => {
-        for(const bucket in desk) {
+        for (const bucket in desk) {
           s[bucket] = { ...(s[bucket] || {}), ...desk[bucket] };
         }
       });
@@ -109,12 +135,16 @@ const useSettingsState = createState<SettingsState>(
   [],
   [
     (set, get) =>
-      createSubscription('settings-store', `/desk/${(window as any).desk}`, (e) => {
-        const data = _.get(e, 'settings-event', false);
-        if (data) {
-          reduceStateN(get(), data, reduceUpdate);
+      createSubscription(
+        'settings-store',
+        `/desk/${(window as any).desk}`,
+        (e) => {
+          const data = _.get(e, 'settings-event', false);
+          if (data) {
+            reduceStateN(get(), data, reduceUpdate);
+          }
         }
-      })
+      )
   ]
 );
 
@@ -133,7 +163,10 @@ export function useTheme() {
 }
 
 // Hide is an optional second parameter for when this function is used in class components
-export function useShowNickname(contact: Contact | null, hide?: boolean): boolean {
+export function useShowNickname(
+  contact: Contact | null,
+  hide?: boolean
+): boolean {
   const hideState = useSettingsState(state => state.calm.hideNicknames);
   const hideNicknames = typeof hide !== 'undefined' ? hide : hideState;
   return Boolean(contact && contact.nickname && !hideNicknames);

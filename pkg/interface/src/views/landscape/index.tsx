@@ -7,6 +7,7 @@ import useHarkState from '~/logic/state/hark';
 import { Workspace } from '~/types/workspace';
 import { Body } from '../components/Body';
 import { GroupsPane } from './components/GroupsPane';
+import { AppsPane } from './components/Apps/AppsPane';
 import './css/custom.css';
 import _ from 'lodash';
 
@@ -36,7 +37,9 @@ moment.updateLocale('en', {
 const makeGroupWorkspace = _.memoize((group: string): Workspace => ({ type: 'group', group }));
 
 const homeWorkspace: Workspace = { type: 'home' };
+const uqbarWorkspace: Workspace = { type: 'uqbar-home' };
 const messagesWorkspace: Workspace = { type: 'messages' };
+const appsWorkspace: Workspace = { type: 'apps' };
 
 export default function Landscape() {
   const notificationsCount = useHarkState(s => s.notificationsCount);
@@ -44,7 +47,7 @@ export default function Landscape() {
   return (
     <>
       <Helmet defer={false}>
-        <title>{ notificationsCount ? `(${String(notificationsCount) }) `: '' }Groups</title>
+        <title>{ notificationsCount ? `(${String(notificationsCount) }) `: '' }~{window.ship}</title>
       </Helmet>
       <Switch>
         <Route path="/~landscape/ship/:host/:name"
@@ -62,8 +65,14 @@ export default function Landscape() {
             );
           }}
         />
+        <Route exact path="/">
+          <GroupsPane workspace={uqbarWorkspace} baseUrl="/" isHome />
+        </Route>
         <Route path="/~landscape/home">
           <GroupsPane workspace={homeWorkspace} baseUrl="/~landscape/home" />
+        </Route>
+        <Route path="/~landscape/apps">
+          <AppsPane workspace={appsWorkspace} baseUrl="/~landscape/apps" />
         </Route>
         <Route path="/~landscape/messages">
           <GroupsPane workspace={messagesWorkspace} baseUrl="/~landscape/messages" />

@@ -1,50 +1,24 @@
-import { Col } from '@tlon/indigo-react';
-import { Content, Graph, Post } from '@urbit/api';
+import React, { ReactElement, useCallback, useEffect, useState, useRef } from 'react';
 import bigInt, { BigInteger } from 'big-integer';
-import React, { ReactElement, useCallback, useEffect, useState } from 'react';
-import create from 'zustand';
-import { persist } from 'zustand/middleware';
+import { Col } from '@tlon/indigo-react';
+import { Association, Content, Graph, Group, Post } from '@urbit/api';
 import { useFileUpload } from '~/logic/lib/useFileUpload';
-import { createStorageKey, storageVersion, clearStorageMigration } from '~/logic/lib/util';
 import { useOurContact } from '~/logic/state/contact';
 import { useGraphTimesent } from '~/logic/state/graph';
 import { Loading } from '~/views/components/Loading';
 import SubmitDragger from '~/views/components/SubmitDragger';
+import { IS_MOBILE } from '~/logic/lib/platform';
+import { useChatStore, useReplyStore } from '~/logic/state/chat';
 import ChatInput from './ChatInput';
 import ChatWindow from './ChatWindow';
+import { CodeMirrorShim } from './ChatEditor';
+import { LinkCollection } from '../ChatResource';
 
-interface useChatStoreType {
-  id: string;
-  message: string;
-  messageStore: Record<string, string>;
-  restore: (id: string) => void;
-  setMessage: (message: string) => void;
-}
-
-export const useChatStore = create<useChatStoreType>(persist((set, get) => ({
-  id: '',
-  message: '',
-  messageStore: {},
-  restore: (id: string) => {
-    const store = get().messageStore;
-    set({
-      id,
-      messageStore: store,
-      message: store[id] || ''
-    });
-  },
-  setMessage: (message: string) => {
-    const store = get().messageStore;
-    store[get().id] = message;
-
-    set({ message, messageStore: store });
-  }
-}), {
-  whitelist: ['messageStore'],
-  name: createStorageKey('chat-unsent'),
-  version: storageVersion,
-  migrate: clearStorageMigration
-}));
+const getMsgText = (msg: Post) => {
+  return msg.contents.reduce((acc, { text, url, code, mention }: any) => {
+    return acc + (text || '') + (url || '') + (code || '') + (mention || '');
+  }, '');
+};
 
 interface ChatPaneProps {
   /**
@@ -56,6 +30,8 @@ interface ChatPaneProps {
    * The graph of the chat to render
    */
   graph: Graph;
+  group?: Group;
+  association?: Association;
   unreadCount: number;
   /**
    * User able to write to chat
@@ -66,6 +42,9 @@ interface ChatPaneProps {
    */
   onReply: (msg: Post) => string;
   onDelete?: (msg: Post) => void;
+  onLike?: (msg: Post) => void;
+  getMostRecent?: () => void;
+  onBookmark?: (msg: Post, permalink: string, collection: LinkCollection, add: boolean) => void;
   /**
    * Fetch more messages
    *
@@ -94,11 +73,20 @@ interface ChatPaneProps {
    * string - path of group
    */
   promptShare?: string[] | string;
+  /**
+   *
+   * Collections of links in the current group
+   *
+   * string[] - array of collections with title and path
+   */
+  collections?: LinkCollection[];
 }
 
 export function ChatPane(props: ChatPaneProps): ReactElement {
   const {
     graph,
+    group,
+    association,
     unreadCount,
     canWrite,
     id,
@@ -107,18 +95,23 @@ export function ChatPane(props: ChatPaneProps): ReactElement {
     dismissUnread,
     onSubmit,
     onDelete,
+    onLike,
+    onBookmark,
+    fetchMessages,
+    getMostRecent = () => null,
     promptShare = [],
-    fetchMessages
+    collections = []
   } = props;
   const graphTimesentMap = useGraphTimesent(id);
   const ourContact = useOurContact();
-  const { restore, setMessage } = useChatStore(s => ({ setMessage: s.setMessage, restore: s.restore }));
   const [uploadError, setUploadError] = useState<string>('');
 
   const handleUploadError = useCallback((err: Error) => {
     setUploadError(err.message);
   }, []);
 
+  const { message, restore } = useChatStore();
+  const { reply, restore: restoreReply, setReply } = useReplyStore();
   const { canUpload, drag } = useFileUpload({
     onSuccess: (url) => {
       onSubmit([{ url }]);
@@ -126,14 +119,17 @@ export function ChatPane(props: ChatPaneProps): ReactElement {
     },
     onError: handleUploadError
   });
+  const inputRef = useRef<CodeMirrorShim>(null);
+  const scrollTo = new URLSearchParams(location.search).get('msg');
+  const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
     restore(id);
+    restoreReply(id);
+    if (!IS_MOBILE) {
+      inputRef.current?.focus();
+    }
   }, [id]);
-
-  const scrollTo = new URLSearchParams(location.search).get('msg');
-
-  const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
     setShowBanner(promptShare.length > 0);
@@ -141,10 +137,10 @@ export function ChatPane(props: ChatPaneProps): ReactElement {
 
   const onReply = useCallback(
     (msg: Post) => {
-      const message = props.onReply(msg);
-      setMessage(message);
+      setReply(props.onReply(msg), getMsgText(msg));
+      inputRef.current.focus();
     },
-    [id, props.onReply]
+    [id, message, props.onReply]
   );
 
   if (!graph) {
@@ -153,31 +149,30 @@ export function ChatPane(props: ChatPaneProps): ReactElement {
 
   return (
     // @ts-ignore bind typings
-    <Col {...drag.bind} height="100%" overflow="hidden" position="relative">
+    <Col {...drag.bind} height="100%" overflow="hidden" position="relative" backgroundColor="white">
+      {/* <ShareProfile
+        our={ourContact}
+        recipients={showBanner ? promptShare : []}
+        onShare={() => setShowBanner(false)}
+      /> */}
       {canUpload && drag.dragging && <SubmitDragger />}
       <ChatWindow
         key={id}
-        graph={graph}
         graphSize={graph.size}
-        unreadCount={unreadCount}
         showOurContact={promptShare.length === 0 && !showBanner}
         pendingSize={Object.keys(graphTimesentMap).length}
-        onReply={onReply}
-        onDelete={onDelete}
-        dismissUnread={dismissUnread}
-        fetchMessages={fetchMessages}
-        isAdmin={isAdmin}
-        getPermalink={getPermalink}
         scrollTo={scrollTo ? bigInt(scrollTo) : undefined}
+        {...{ graph, unreadCount, onReply, onDelete, onLike, onBookmark, dismissUnread, fetchMessages, isAdmin, getPermalink, collections, inputRef, reply, getMostRecent }}
       />
       {canWrite && (
         <ChatInput
-          onSubmit={onSubmit}
+          {...{ onSubmit, isAdmin, group, association }}
           ourContact={(promptShare.length === 0 && ourContact) || undefined}
           placeholder="Message..."
           uploadError={uploadError}
           setUploadError={setUploadError}
           handleUploadError={handleUploadError}
+          chatEditor={inputRef}
         />
       )}
     </Col>

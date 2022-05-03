@@ -13,15 +13,20 @@ let devServer = {
   port: 9000,
   host: '0.0.0.0',
   disableHostCheck: true,
+  // https: true,
   historyApiFallback: {
     index: '/apps/landscape/index.html',
     disableDotRule: true
-  }
+  },
+  publicPath: '/apps/escape/'
 };
 
-const router =  _.mapKeys(urbitrc.FLEET || {}, (value, key) => `${key}.localhost:9000`);
+const router = _.mapKeys(
+  urbitrc.FLEET || {},
+  (value, key) => `${key}.localhost:9000`
+);
 
-if(urbitrc.URL) {
+if (urbitrc.URL) {
   devServer = {
     ...devServer,
     // headers: {
@@ -31,15 +36,15 @@ if(urbitrc.URL) {
       {
         context: (path) => {
           console.log(path);
-          if(path === '/apps/landscape/desk.js') {
+          if (path === '/apps/escape/desk.js') {
             return true;
           }
-          return !path.startsWith('/apps/landscape');
+          return !path.startsWith('/apps/escape');
         },
         changeOrigin: true,
         target: urbitrc.URL,
         router
-     }
+      }
     ]
   };
 }
@@ -57,10 +62,17 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env', '@babel/typescript', ['@babel/preset-react', {
-              runtime: 'automatic',
-              development: true
-            }]],
+            presets: [
+              '@babel/preset-env',
+              '@babel/typescript',
+              [
+                '@babel/preset-react',
+                {
+                  runtime: 'automatic',
+                  development: true
+                }
+              ]
+            ],
             plugins: [
               '@babel/transform-runtime',
               '@babel/plugin-proposal-object-rest-spread',
@@ -73,7 +85,7 @@ module.exports = {
         exclude: /node_modules\/(?!(@tlon\/indigo-dark|@tlon\/indigo-light|@tlon\/indigo-react|@urbit\/api)\/).*/
       },
       {
-        test: /\.css$/i,
+        test: /\.(sc|c)ss$/i,
         use: [
           // Creates `style` nodes from JS strings
           'style-loader',
@@ -84,7 +96,7 @@ module.exports = {
         ]
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
         use: [
           {
             loader: 'file-loader',
@@ -94,12 +106,24 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+        loader: require.resolve('url-loader'),
+        options: {
+          limit: 10000,
+          name: 'static/media/[name].[hash:8].[ext]'
+        }
+      },
+      {
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/,
+        use: ['@svgr/webpack']
       }
-
     ]
   },
   resolve: {
-    extensions: ['.js', '.ts', '.tsx']
+    extensions: ['.js', '.ts', '.tsx', '.json']
   },
   devtool: 'inline-source-map',
   devServer: devServer,
@@ -112,7 +136,7 @@ module.exports = {
 
     // new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      title: 'Groups',
+      title: 'EScape',
       template: './public/index.html'
     }),
     process.env.NODE_ENV !== 'production' && new ReactRefreshWebpackPlugin()
@@ -124,7 +148,7 @@ module.exports = {
     },
     chunkFilename: '[name].js',
     path: path.resolve(__dirname, '../dist'),
-    publicPath: '/apps/landscape/',
+    publicPath: '/apps/escape/',
     globalObject: 'this'
   },
   optimization: {

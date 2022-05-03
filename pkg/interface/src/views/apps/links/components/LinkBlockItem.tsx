@@ -125,7 +125,7 @@ export function LinkBlockItem(props: LinkBlockItemProps & CenterProps) {
             </Row>
           </Row>
           <Row width="100%">
-            <Author ship={author} date={post['time-sent']} showImage></Author>
+            <Author ship={author} date={post['time-sent']} showImage maxNameWidth="200px" />
           </Row>
         </Col>
       </Box>

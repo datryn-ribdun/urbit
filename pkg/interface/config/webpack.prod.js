@@ -20,7 +20,11 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env', '@babel/typescript', '@babel/preset-react'],
+            presets: [
+              '@babel/preset-env',
+              '@babel/typescript',
+              '@babel/preset-react'
+            ],
             plugins: [
               'lodash',
               '@babel/transform-runtime',
@@ -33,7 +37,7 @@ module.exports = {
         exclude: /node_modules\/(?!(@tlon\/indigo-dark|@tlon\/indigo-light|@tlon\/indigo-react|@urbit\/api)\/).*/
       },
       {
-         test: /\.css$/i,
+        test: /\.(sc|c)ss$/i,
         use: [
           // Creates `style` nodes from JS strings
           'style-loader',
@@ -44,7 +48,7 @@ module.exports = {
         ]
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
         use: [
           {
             loader: 'file-loader',
@@ -54,11 +58,24 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+        loader: require.resolve('url-loader'),
+        options: {
+          limit: 10000,
+          name: 'static/media/[name].[hash:8].[ext]'
+        }
+      },
+      {
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/,
+        use: ['@svgr/webpack']
       }
     ]
   },
   resolve: {
-    extensions: ['.js', '.ts', '.tsx']
+    extensions: ['.js', '.ts', '.tsx', '.json']
   },
   devtool: 'source-map',
   // devServer: {
@@ -71,23 +88,27 @@ module.exports = {
     new MomentLocalesPlugin(),
     new CleanWebpackPlugin(),
     new webpack.DefinePlugin({
-      'process.env.LANDSCAPE_STREAM': JSON.stringify(process.env.LANDSCAPE_STREAM),
+      'process.env.LANDSCAPE_STREAM': JSON.stringify(
+        process.env.LANDSCAPE_STREAM
+      ),
       'process.env.LANDSCAPE_SHORTHASH': JSON.stringify(GIT_DESC),
       'process.env.LANDSCAPE_STORAGE_VERSION': Date.now().toString(),
-      'process.env.LANDSCAPE_LAST_WIPE': '2021-10-20',
+      'process.env.LANDSCAPE_LAST_WIPE': '2021-10-20'
     }),
     new HtmlWebpackPlugin({
-      title: 'Groups',
+      title: 'EScape',
       template: './public/index.html',
       favicon: './src/assets/img/Favicon.png'
     })
   ],
   output: {
     filename: (pathData) => {
-      return pathData.chunk.name === 'app' ? 'index.[contenthash].js' : '[name].js';
+      return pathData.chunk.name === 'app'
+        ? 'index.[contenthash].js'
+        : '[name].js';
     },
     path: path.resolve(__dirname, '../dist'),
-    publicPath: '/apps/landscape/'
+    publicPath: '/apps/escape/'
   },
   optimization: {
     minimize: true,

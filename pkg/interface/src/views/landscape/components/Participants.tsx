@@ -278,14 +278,16 @@ function Participant(props: {
   }, [association, contact.patp]);
 
   const onKick = useCallback(async () => {
-    const resource = resourceFromPath(association.group);
-    if(contact.pending) {
-      await airlock.poke(changePolicy(
-        resource,
-        { invite: { removeInvites: [`~${contact.patp}`] } }
-      ));
-    } else {
-      await airlock.poke(removeMembers(resource, [`~${contact.patp}`]));
+    if (window.confirm(`Are you sure you want to kick ~${contact.patp}?`)) {
+      const resource = resourceFromPath(association.group);
+      if (contact.pending) {
+        await airlock.poke(changePolicy(
+          resource,
+          { invite: { removeInvites: [`~${contact.patp}`] } }
+        ));
+      } else {
+        await airlock.poke(removeMembers(resource, [`~${contact.patp}`]));
+      }
     }
   }, [contact, association]);
 
@@ -352,7 +354,7 @@ function Participant(props: {
                 </Link>
               </Action>
               <Action bg="transparent">
-                <Link to={`/~landscape/dm/${contact.patp}`}>
+                <Link to={`/~landscape/messages/dm/~${contact.patp}`}>
                   <Text color="green">Send Message</Text>
                 </Link>
               </Action>

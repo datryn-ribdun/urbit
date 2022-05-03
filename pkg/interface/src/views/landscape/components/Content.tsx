@@ -2,6 +2,7 @@ import { Box } from '@tlon/indigo-react';
 import React, { Suspense, useCallback, useEffect } from 'react';
 import { Route, Switch, useHistory, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import Info from '~/views/apps/info/Info';
 import { PermalinkRoutes } from '~/views/apps/permalinks/app';
 import { useShortcut } from '~/logic/state/settings';
 import { Loading } from '~/views/components/Loading';
@@ -13,9 +14,10 @@ import Notifications from '~/views/apps/notifications/notifications';
 import ErrorComponent from '~/views/components/Error';
 
 import { getNotificationRedirectFromLink } from '~/logic/lib/notificationRedirects';
+import useMetadataState from '~/logic/state/metadata';
 import { JoinRoute } from './Join/Join';
 import useInviteState from '~/logic/state/invite';
-import useMetadataState from '~/logic/state/metadata';
+import { postReactNativeMessage } from '~/logic/lib/reactNative';
 
 export const Container = styled(Box)`
    flex-grow: 1;
@@ -29,6 +31,23 @@ export const Content = () => {
   const location = useLocation();
   const mdLoaded = useMetadataState(s => s.loaded);
   const inviteLoaded = useInviteState(s => s.loaded);
+
+  useEffect(() => {
+    // Mobile notification pop-ups when app is in background or foreground (not when closed)
+    // api.subscribe({ app: 'hark-store', path: '/notes',
+    //   event: (u: any) => {
+    //     if ('add-note' in u) {
+    //       const { bin, body } = u['add-note'];
+    //       const binId = harkBinToId(bin);
+    //       postReactNativeMessage({ type: 'hark-notification', binId, body, redirect: getNotificationRedirect(body.link) });
+    //     }
+    //   }
+    // });
+
+    return history.listen((location) => {
+      postReactNativeMessage({ type: 'navigation-change', pathname: location.pathname });
+    });
+  }, []);
 
   useEffect(() => {
     const query = new URLSearchParams(location.search);
@@ -79,6 +98,10 @@ export const Content = () => {
           <Route
             path="/~notifications"
             component={Notifications}
+          />
+          <Route
+            path="/~info"
+            component={Info}
           />
           <PermalinkRoutes />
 

@@ -35,8 +35,10 @@ const PostHeader = (props: PostHeaderProps): ReactElement => {
   const resource = resourceFromPath(graphPath);
 
   const doDelete = () => {
-    const { ship, name } = resource;
-    airlock.poke(removePosts(ship, name, [post.index]));
+    if (confirm('Are you sure you want to delete this note?')) {
+      const { ship, name } = resource;
+      airlock.poke(removePosts(ship, name, [post.index]));
+    }
   };
 
   return (
@@ -76,7 +78,7 @@ const PostHeader = (props: PostHeaderProps): ReactElement => {
             borderColor="lightGray"
             p={1}
           >
-            <Action bg="white" m={1} color="black" onClick={doCopy}>
+            <Action bg="transparent" m={1} color="black" onClick={doCopy}>
               {copyDisplay}
             </Action>
             <Action bg="white" m={1} color="black" onClick={doDelete}>

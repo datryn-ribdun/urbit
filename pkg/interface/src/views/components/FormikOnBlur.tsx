@@ -16,7 +16,7 @@ export function FormikOnBlur<
     ) {
       formikBag.submitForm();
     }
-  }, 100), []);
+  }, 500), []);
 
   useEffect(() => {
     trySubmit(formikBag);

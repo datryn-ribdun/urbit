@@ -79,7 +79,7 @@ export function NotePreview(props: NotePreviewProps) {
   const cursorStyle = post.pending ? 'default' : 'pointer';
 
   return (
-    <Box width='100%' opacity={post.pending ? '0.5' : '1'}>
+    <Box width='100%' opacity={post.pending ? '0.5' : '1'} backgroundColor="washedGray" p={2} mb={3} borderRadius={4}>
       <Link
         to={post.pending ? '#' : url}
         style={ { cursor: cursorStyle } }
@@ -93,6 +93,7 @@ export function NotePreview(props: NotePreviewProps) {
           alignItems='flex-start'
           overflow='hidden'
           p={2}
+          backgroundColor="white"
         >
           <WrappedBox mb={2}><Text bold>{title}</Text></WrappedBox>
           <WrappedBox>
@@ -102,13 +103,15 @@ export function NotePreview(props: NotePreviewProps) {
           </WrappedBox>
         </Col>
       </Link>
-      <Row minWidth={0} flexShrink={0} width="100%" justifyContent="space-between" py={3} bg="white">
+      <Row minWidth={0} flexShrink={0} width="100%" justifyContent="space-between" py={2}>
         <Author
           showImage
           ship={post?.author}
           date={post?.['time-sent']}
           group={group}
           unread={isUnread}
+          showDate
+          maxNameWidth="200px"
         />
         <Box ml="auto" mr={1}>
           <Link to={url}>

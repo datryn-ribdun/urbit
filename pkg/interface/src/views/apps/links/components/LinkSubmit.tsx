@@ -1,19 +1,12 @@
-import {
-  BaseInput,
-  Box,
-  Button,
-  Icon,
-  LoadingSpinner,
-  Text
-} from '@tlon/indigo-react';
 import { hasProvider } from 'oembed-parser';
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPost } from '@urbit/api';
+import { Icon, BaseInput, Box, Button, LoadingSpinner, Text } from '@tlon/indigo-react';
 import { parsePermalink, permalinkToReference } from '~/logic/lib/permalinks';
+import useGraphState from '~/logic/state/graph';
+import { useFileUpload } from '~/logic/lib/useFileUpload';
 import { StatelessUrlInput } from '~/views/components/StatelessUrlInput';
 import SubmitDragger from '~/views/components/SubmitDragger';
-import useGraphState from '~/logic/state/graph';
-import { createPost } from '@urbit/api';
-import { useFileUpload } from '~/logic/lib/useFileUpload';
 
 interface LinkSubmitProps {
   name: string;
@@ -82,6 +75,7 @@ const LinkSubmit = (props: LinkSubmitProps) => {
         setLinkValid(false);
         return;
       }
+      linkValid = true;
     }
 
     if (linkValid) {
@@ -110,6 +104,9 @@ const LinkSubmit = (props: LinkSubmitProps) => {
           )
         );
       }
+    } else {
+      setLinkValid(false);
+        return;
     }
     return link;
   };
@@ -134,7 +131,8 @@ const LinkSubmit = (props: LinkSubmitProps) => {
 
   return (
     <>
-      {/* @ts-ignore archaic event type mismatch */}
+    {/* @ts-ignore archaic event type mismatch */}
+      <Text mb={1}>Urbit links should start with {'"web+urbitgraph://"'}</Text>
       <Box
         flexShrink={0}
         position="relative"

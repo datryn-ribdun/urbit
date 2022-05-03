@@ -1,0 +1,26 @@
+.cf {
+  .emoji-picker-react {
+    .emoji-categories button {
+      color: inherit;
+      background-color: white;
+      padding: 4px;
+      height: 32px;
+      width: 32px;
+    }
+
+    .emoji-group:before {
+      background-color: inherit;
+    }
+
+    input.emoji-search {
+      background-color: inherit;
+      color: inherit;
+    }
+
+    .active-category-indicator-wrapper .active-category-indicator {
+      left: 0;
+      width: 28px;
+      bottom: 1px;
+    }
+  }
+}

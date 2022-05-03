@@ -28,15 +28,17 @@ import { NewChannel } from './NewChannel';
 import { GroupHome } from './Home/GroupHome';
 import useGraphState from '~/logic/state/graph';
 import { deSig } from '@urbit/api';
+import { UqbarHome } from './Home/UqbarHome';
 
 interface GroupsPaneProps {
   baseUrl: string;
   workspace: Workspace;
+  isHome?: boolean;
 }
 
 export function GroupsPane(props: GroupsPaneProps) {
-  const { baseUrl, workspace } = props;
   const location = useLocation();
+  const { baseUrl, workspace, isHome = false } = props;
   const associations = useMetadataState(state => state.associations);
   const notificationsCount = useHarkState(state => state.notificationsCount);
 
@@ -96,6 +98,24 @@ export function GroupsPane(props: GroupsPaneProps) {
       setRecentGroups(gs => _.uniq([workspace.group, ...gs]));
     };
   }, [workspace]);
+
+  if (isHome) {
+    return (
+      <>
+        <Helmet defer={false}>
+          <title>{notificationsCount ? `(${String(notificationsCount)}) ` : ''}~{window.ship}</title>
+        </Helmet>
+        <Skeleton
+          {...props}
+          mobileHide={false}
+          recentGroups={recentGroups}
+          baseUrl={baseUrl}
+        >
+          <UqbarHome />
+        </Skeleton>
+      </>
+    );
+  }
 
   if (!(associations && (groupPath ? groupPath in groups : true))) {
     return null;
@@ -252,7 +272,7 @@ export function GroupsPane(props: GroupsPaneProps) {
           render={(routeProps) => {
             const shouldHideSidebar =
               routeProps.location.pathname.includes('/feed');
-            const title = groupAssociation?.metadata?.title ?? 'Groups';
+            const title = groupAssociation?.metadata?.title ?? `~${window.ship}`;
             return (
               <>
                 <Helmet defer={false}>

@@ -19,10 +19,10 @@ export type TimestampProps = BoxProps & {
 const Timestamp = (props: TimestampProps): ReactElement | null => {
   const {
     stamp,
-    date,
+    date = false,
     time,
     color,
-    relative,
+    relative = false,
     dateNotRelative = false,
     fontSize,
     lineHeight,
@@ -35,8 +35,7 @@ const Timestamp = (props: TimestampProps): ReactElement | null => {
   };
   if (!stamp)
 return null;
-  const { hovering, bind } =
-    date === true ? { hovering: true, bind: {} } : useHovering();
+  const { hovering, bind } = date ? { hovering: true, bind: {} } : useHovering();
   let datestamp = stamp.format(DateFormat);
   if (!dateNotRelative) {
     if (stamp.format(DateFormat) === moment().format(DateFormat)) {
@@ -70,7 +69,7 @@ return null;
           {timestamp}
         </Text>
       )}
-      {date !== false && relative !== true && (
+      {date !== false && (!relative) && (
         <Text
           flexShrink={0}
           color={color}

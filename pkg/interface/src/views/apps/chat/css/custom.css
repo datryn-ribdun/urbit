@@ -67,7 +67,7 @@ h2 {
 }
 
 .clamp-message {
-  max-width: calc(100% - 36px - 1.5rem);
+  max-width: calc(100% - 1.5rem);
 }
 
 .mono {
@@ -386,4 +386,9 @@ pre.CodeMirror-placeholder.CodeMirror-line-like {
     background: var(--medium-gray) !important;
     color: inherit;
   }
+}
+
+.hover-underline:hover {
+  border-bottom: 1px solid darkgray;
+  line-height: calc(1.66667em - 1px);
 }

@@ -5,6 +5,7 @@ import { Body } from '~/views/components/Body';
 import ErrorBoundary from '~/views/components/ErrorBoundary';
 import { useShortcut } from '~/logic/state/settings';
 import { Loading } from '~/views/components/Loading';
+import { IS_MOBILE } from '~/logic/lib/platform';
 
 interface SkeletonProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface SkeletonProps {
   selected?: string;
   baseUrl: string;
   mobileHide?: boolean;
+  desktopHide?: boolean;
   workspace: Workspace;
 }
 
@@ -21,23 +23,25 @@ export const Skeleton = React.memo((props: SkeletonProps): ReactElement => {
     setSidebar(s => !s);
   }, []));
 
+  const hideMobileSidebar = props.mobileHide && IS_MOBILE;
+  const hideDesktopSidebar = props.desktopHide && !IS_MOBILE;
+
   return (
     <Body
       display="grid"
       gridTemplateColumns={
-        sidebar
-        ?  ['100%', 'minmax(150px, 1fr) 3fr', 'minmax(250px, 1fr) 4fr']
+        sidebar && !hideDesktopSidebar
+        ?  ['100%', 'minmax(200px, 1fr) 3fr', 'minmax(250px, 1fr) 4fr', 'minmax(300px, 1fr) 5fr']
         : '100%'
       }
       gridTemplateRows="100%"
     >
       <ErrorBoundary>
-        { sidebar && (
+        { (sidebar && !hideMobileSidebar && !hideDesktopSidebar) && (
           <Sidebar
             recentGroups={props.recentGroups}
             selected={props.selected}
             baseUrl={props.baseUrl}
-            mobileHide={props.mobileHide}
             workspace={props.workspace}
           />
         )}

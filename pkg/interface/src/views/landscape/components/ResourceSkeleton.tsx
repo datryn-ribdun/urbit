@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { Box, Col, Icon, Text } from '@tlon/indigo-react';
 import { AppName, Association, isWriter } from '@urbit/api';
-import React, { ReactElement, ReactNode, useCallback, useState } from 'react';
+import { Box, Col, Icon, Row, Text } from '@tlon/indigo-react';
+import React, { ReactElement, ReactNode, useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import urbitOb from 'urbit-ob';
@@ -13,6 +13,10 @@ import useGroupState from '~/logic/state/group';
 import { Dropdown } from '~/views/components/Dropdown';
 import RichText from '~/views/components/RichText';
 import { MessageInvite } from '~/views/landscape/components/MessageInvite';
+import { IS_MOBILE } from '~/logic/lib/platform';
+import useMetadataState from '~/logic/state/metadata';
+import { getPermalinkForGraph } from '~/logic/lib/permalinks';
+import { useCopy } from '~/logic/lib/useCopy';
 
 const TruncatedText = styled(RichText)`
   white-space: nowrap;
@@ -68,11 +72,14 @@ export function ResourceSkeleton(props: ResourceSkeletonProps): ReactElement {
     app = association.metadata.config.graph as AppName;
   }
   const rid = association.resource;
-  const groups = useGroupState(state => state.groups);
+  const { groups } = useGroupState();
+  const { associations } = useMetadataState();
   const { hideNicknames } = useSettingsState(selectCalmState);
   const group = groups[association.group];
   let workspace = association.group;
   const [actionsWidth, setActionsWidth] = useState(0);
+  const permalink = useMemo(() => getPermalinkForGraph(association.group, association.resource), [association]);
+  const { doCopy, copyDisplay } = useCopy(permalink, <Icon icon='Copy' color='gray' pr={2} />, <Icon icon='Checkmark' color='gray' pr={2} />);
 
   if (group?.hidden && app === 'chat') {
     workspace = '/messages';
@@ -123,7 +130,15 @@ export function ResourceSkeleton(props: ResourceSkeletonProps): ReactElement {
     </Box>
   );
 
-  const titleText = (
+  // TODO: if a resource of a group, show breadcrumbs on mobile
+  const titleText = IS_MOBILE && workspace === association.group
+  ? (
+    <Row width="100%">
+      <Text maxWidth="33%" textOverflow='ellipsis' overflow='hidden' whiteSpace='nowrap' fontWeight={600} fontSize="14px">{associations.groups[workspace]?.metadata?.title}</Text>
+      <Text fontWeight={600} fontSize="14px" mx={1}>{'>'}</Text>
+      <Text maxWidth="33%" textOverflow='ellipsis' overflow='hidden' whiteSpace='nowrap' fontWeight={600} fontSize="14px">{title}</Text>
+    </Row>
+  ) : (
     <Text
       mono={urbitOb.isValidPatp(title)}
       fontSize={2}
@@ -187,11 +202,17 @@ export function ResourceSkeleton(props: ResourceSkeletonProps): ReactElement {
         </Dropdown>
       ) : canWrite ? (
         <Link to={resourcePath('/new')}>
-          <Text bold pr='3' color='blue'>
+          <Text bold pr={2} color='blue'>
             + New Post
           </Text>
         </Link>
       ) : null;
+
+  const copyControl = (
+    <Box onClick={doCopy} cursor="pointer">
+      {copyDisplay}
+    </Box>
+  );
 
   const menuControl = (
     <Link to={`${baseUrl}/settings`}>
@@ -219,7 +240,7 @@ export function ResourceSkeleton(props: ResourceSkeletonProps): ReactElement {
         <Box
           display='flex'
           alignItems='baseline'
-          width={`calc(100% - ${actionsWidth}px - 16px)`}
+          width={`calc(100% - ${actionsWidth}px - 8px)`}
           flexShrink={1}
           minWidth={0}
         >
@@ -235,6 +256,7 @@ export function ResourceSkeleton(props: ResourceSkeletonProps): ReactElement {
           {...bind}
         >
           {extraControls}
+          {copyControl}
           {menuControl}
         </Box>
       </Box>

@@ -18,12 +18,19 @@ import { useGroupForAssoc } from '~/logic/state/group';
 import useHarkState, { useHarkStat } from '~/logic/state/hark';
 import { Loading } from '~/views/components/Loading';
 import { ChatPane } from './components/ChatPane';
+import useMetadataState from '~/logic/state/metadata';
+import useBookmarks from '~/logic/lib/hooks/useBookmarks';
 
 const getCurrGraphSize = (ship: string, name: string) => {
   const { graphs } = useGraphState.getState();
   const graph = graphs[`${ship}/${name}`];
   return graph?.size ?? 0;
 };
+
+export interface LinkCollection {
+  path: string;
+  title: string;
+}
 
 type ChatResourceProps = {
   association: Association;
@@ -34,25 +41,38 @@ const ChatResource = (props: ChatResourceProps): ReactElement => {
   const { association } = props;
   const { resource } = association;
   const [toShare, setToShare] = useState<string[] | string | undefined>();
+  const { associations } = useMetadataState();
   const group = useGroupForAssoc(association)!;
   const graph = useGraphForAssoc(association);
   const stats = useHarkStat(toHarkPath(association.resource));
+  const { onBookmark } = useBookmarks();
   const unreadCount = stats.count;
   const canWrite = group ? isWriter(group, resource, window.ship) : false;
   const [
     getNewest,
+    getNode,
     getOlderSiblings,
     getYoungerSiblings,
     addPost
   ] = useGraphState(
-    s => [s.getNewest, s.getOlderSiblings, s.getYoungerSiblings, s.addPost],
+    s => [s.getNewest, s.getNode, s.getOlderSiblings, s.getYoungerSiblings, s.addPost],
     shallow
   );
 
   useEffect(() => {
-    const count = Math.min(400, 100 + unreadCount);
     const { ship, name } = resourceFromPath(resource);
-    getNewest(ship, name, count);
+
+    const scrollTo = new URLSearchParams(location.search).get('msg');
+    const count = scrollTo ? 50 : Math.min(400, 100 + unreadCount);
+
+    if (scrollTo) {
+      getNode(ship, name, `/${scrollTo}`);
+      getYoungerSiblings(ship, name, count, `/${scrollTo}`);
+      getOlderSiblings(ship, name, count, `/${scrollTo}`);
+    } else {
+      getNewest(ship, name, count);
+    }
+
     setToShare(undefined);
     (async function () {
       if (group.hidden) {
@@ -94,8 +114,22 @@ const ChatResource = (props: ChatResourceProps): ReactElement => {
     [group]
   );
 
-const fetchMessages = useCallback(async (newer: boolean) => {
-  const pageSize = 100;
+  const collections = useMemo(() => !isAdmin ? [] : Object.keys(associations.graph).filter((channel) => {
+    const assoc = associations.graph[channel];
+    return assoc.group === association.group && assoc.metadata.config.graph === 'link';
+  }).map(path => ({
+    title: associations.graph[path].metadata.title,
+    path
+  })), [associations, association, isAdmin]);
+
+  const getMostRecent = useCallback(() => {
+    const { ship, name } = resourceFromPath(resource);
+    const count = Math.min(400, 100 + unreadCount);
+    getNewest(ship, name, count);
+  }, [resource, unreadCount]);
+
+  const fetchMessages = useCallback(async (newer: boolean) => {
+    const pageSize = 100;
 
     const [, , ship, name] = resource.split('/');
     const graphSize = graph?.size ?? 0;
@@ -123,7 +157,6 @@ const fetchMessages = useCallback(async (newer: boolean) => {
       }
       await getOlderSiblings(ship, name, pageSize, `/${index.toString()}`);
       const currSize = getCurrGraphSize(deSig(ship), name);
-      console.log(currSize);
       const done = expectedSize !== currSize;
       return done;
     }
@@ -132,11 +165,43 @@ const fetchMessages = useCallback(async (newer: boolean) => {
   const onSubmit = useCallback((contents: Content[]) => {
     const { ship, name } = resourceFromPath(resource);
     addPost(ship, name, createPost(window.ship, contents));
-  }, [resource, addPost]);
+  }, [resource, addPost, createPost]);
 
   const onDelete = useCallback((msg: Post) => {
     const { ship, name } = resourceFromPath(resource);
     airlock.poke(removePosts(ship, name, [msg.index]));
+  }, [resource]);
+
+  const onLike = useCallback(async ({ author, signatures, index }: Post) => {
+    if (window.ship !== author) {
+      const { ship, name } = resourceFromPath(resource);
+      const remove = signatures.find(({ ship }: any) => ship === window.ship);
+
+      const body = remove
+        ? {
+          'remove-signatures': {
+            uid: { resource: { ship, name }, index },
+            signatures: []
+          }
+        } // unlike
+        : {
+          'add-signatures': {
+            uid: { resource: { ship, name }, index },
+            signatures: []
+          }
+        }; // like
+
+      // TODO: remove this check once the remove-signatures backend has been updated. Right now it removes all signatures, which is wrong
+      if (!remove) {
+        await airlock.thread({
+          inputMark: 'graph-update-3',
+          outputMark: 'json',
+          threadName: `${remove ? 'remove' : 'add'}-signatures`,
+          desk: 'escape',
+          body
+        });
+      }
+    }
   }, [resource]);
 
   const dismissUnread = useCallback(() => {
@@ -156,17 +221,25 @@ const fetchMessages = useCallback(async (newer: boolean) => {
   return (
     <ChatPane
       id={resource.slice(7)}
-      graph={graph}
-      unreadCount={unreadCount}
-      canWrite={canWrite}
-      onReply={onReply}
-      onDelete={onDelete}
-      fetchMessages={fetchMessages}
-      dismissUnread={dismissUnread}
-      getPermalink={getPermalink}
-      isAdmin={isAdmin}
-      onSubmit={onSubmit}
       promptShare={toShare}
+      {...{
+        graph,
+        unreadCount,
+        canWrite,
+        onReply,
+        onDelete,
+        onLike,
+        onSubmit,
+        onBookmark,
+        fetchMessages,
+        dismissUnread,
+        getPermalink,
+        isAdmin,
+        group,
+        association,
+        collections,
+        getMostRecent
+      }}
     />
   );
 };

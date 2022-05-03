@@ -11,7 +11,16 @@ import useLocalState from '../state/local';
 import useStorageState from '../state/storage';
 import gcpManager from '../lib/gcpManager';
 
-export async function bootstrapApi() {
+export async function bootstrapApi(reset = false) {
+  if (reset) {
+    airlock.reset();
+
+    const isResourceView = window.location.href.match(/\/resource\/[a-z]*?\/ship\//);
+    if (isResourceView) {
+      return;
+    }
+  }
+
   airlock.reset();
   airlock.onError = (e) => {
     (async () => {
@@ -67,3 +76,5 @@ export async function bootstrapApi() {
   getKeys();
   getShallowChildren(`~${window.ship}`, 'dm-inbox');
 }
+
+window.bootstrapApi = bootstrapApi;

@@ -8,8 +8,12 @@ export function getTitleFromWorkspace(
   switch (workspace.type) {
     case 'home':
       return 'My Channels';
+    case 'uqbar-home':
+      return 'Home';
     case 'messages':
       return 'Messages';
+    case 'apps':
+      return 'My Apps';
     case 'group':
       const association = associations.groups[workspace.group];
       return association?.metadata?.title || '';

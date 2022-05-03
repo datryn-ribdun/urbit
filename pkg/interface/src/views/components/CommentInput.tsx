@@ -46,7 +46,7 @@ const SubmitTextArea = (props) => {
   return (
     <TextArea
       lineHeight="tall"
-      backgroundColor="white"
+      backgroundColor="transparent"
       color="black"
       fontFamily="sans"
       fontWeight="500"
@@ -112,7 +112,7 @@ export default function CommentInput(props: CommentInputProps) {
             my="1"
             width="fit-content"
             alignSelf="flex-end"
-            backgroundColor="white"
+            backgroundColor="transparent"
             onClick={submitForm}
           >
             {label}

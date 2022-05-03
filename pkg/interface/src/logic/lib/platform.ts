@@ -7,4 +7,8 @@ export const IS_SAFARI = ua.includes('Safari') && !ua.includes('Chrome');
 
 export const IS_ANDROID = ua.includes('Android');
 
-export const IS_MOBILE = IS_IOS || IS_ANDROID;
+export const IS_MOBILE = window.innerWidth < 550;
+export const IS_SHORT_SCREEN = !IS_MOBILE && window.innerHeight < 660;
+
+export const isMobileApp = () => IS_MOBILE && window.isMobileApp;
+export const isMobileWeb = () => IS_MOBILE && !window.isMobileApp;

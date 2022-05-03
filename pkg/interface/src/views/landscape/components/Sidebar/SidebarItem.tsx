@@ -1,6 +1,7 @@
 import _ from 'lodash';
-import React, { ReactNode } from 'react';
+import React, { MouseEvent, ReactNode } from 'react';
 import urbitOb from 'urbit-ob';
+import { Link, useHistory } from 'react-router-dom';
 import { Icon, Row, Box, Text, BaseImage } from '@tlon/indigo-react';
 import { Association, cite, deSig } from '@urbit/api';
 import { HoverBoxLink } from '~/views/components/HoverBox';
@@ -9,16 +10,16 @@ import { Workspace } from '~/types/workspace';
 import useContactState, { useContact } from '~/logic/state/contact';
 import { getItemTitle, getModuleIcon, uxToHex } from '~/logic/lib/util';
 import useGroupState from '~/logic/state/group';
-import Dot from '~/views/components/Dot';
 import { useHarkDm, useHarkStat } from '~/logic/state/hark';
 import useSettingsState from '~/logic/state/settings';
 import useGraphState from '~/logic/state/graph';
-import {usePreview} from '~/logic/state/metadata';
+import { usePreview } from '~/logic/state/metadata';
+import { IMAGE_NOT_FOUND } from '~/logic/constants/links';
 
 function useAssociationStatus(resource: string) {
-  const [, , ship, name] = resource.split("/");
+  const [, , ship, name] = resource.split('/');
   const graphKey = `${deSig(ship)}/${name}`;
-  const isSubscribed = useGraphState((s) => s.graphKeys.has(graphKey));
+  const isSubscribed = useGraphState(s => s.graphKeys.has(graphKey));
   const stats = useHarkStat(`/graph/~${graphKey}`);
   const { count, each } = stats;
   const hasNotifications = false;
@@ -34,89 +35,165 @@ function useAssociationStatus(resource: string) {
   }
 }
 
-function SidebarItemBase(props: {
+export function SidebarItemBase(props: {
   to: string;
-  selected: boolean;
-  hasNotification: boolean;
-  hasUnread: boolean;
+  selected?: boolean;
+  groupSelected?: boolean;
+  hasNotification?: boolean;
+  hasUnread?: boolean;
+  unreadCount?: number;
   isSynced?: boolean;
-  children: ReactNode;
+  children?: ReactNode;
   title: string | ReactNode;
   mono?: boolean;
+  fontSize?: string;
   pending?: boolean;
-  onClick?: () => void;
+  isGroup?: boolean;
+  isFolder?: boolean;
+  locked?: boolean;
+  isAdmin?: boolean;
+  isApps?: boolean;
+  open?: boolean;
+  indent?: number;
+  onClick?: (e: MouseEvent) => void;
 }) {
   const {
     title,
-    children,
+    children = null,
     to,
-    selected,
-    hasNotification,
-    hasUnread,
+    selected = false,
+    groupSelected = false,
+    fontSize,
+    hasNotification = false,
+    hasUnread = false,
+    unreadCount = 0,
     isSynced = false,
     mono = false,
     pending = false,
+    isGroup = false,
+    isFolder = false,
+    locked = false,
+    isAdmin = false,
+    isApps = false,
+    open = false,
+    indent = 0,
     onClick
   } = props;
+  const history = useHistory();
   const color = isSynced
-    ? hasUnread || hasNotification
-      ? "black"
-      : "gray"
-    : "lightGray";
+    ? selected || (!isGroup && hasUnread)
+      ? 'black'
+      : 'gray'
+    : 'lightGray';
 
-  const fontWeight = hasUnread || hasNotification ? "500" : "normal";
+  const hasGroupUnread = (isGroup || isFolder) && (hasUnread || hasNotification);
+  const hasChannelUnread = !isGroup && !isFolder && (hasUnread || hasNotification);
+
+  const fontStyle = hasGroupUnread ? 'italic' : 'normal';
+  const fontWeight = hasChannelUnread ? 600 : 'normal';
+  const bg = pending ? 'lightBlue' : groupSelected ? 'washedGray' : 'white';
+  const borderBottom = selected ? '1px solid lightGray' : undefined;
 
   return (
     <HoverBoxLink
       // ref={anchorRef}
       to={to}
       onClick={onClick}
-      bg={pending ? "lightBlue" : "white"}
-      bgActive={pending ? "washedBlue" : "washedGray"}
+      bg={bg}
+      bgActive={pending ? 'washedBlue' : 'washedGray'}
       width="100%"
       display="flex"
       justifyContent="space-between"
       alignItems="center"
+      position={open && !isFolder ? 'sticky' : 'relative'}
+      top={open ? '0px' : undefined}
+      zIndex="1"
+      backgroundColor="white"
+      opacity={1}
       py={1}
-      pl={3}
+      pl={`${8 + indent * 28}px`}
       pr={3}
       selected={selected}
+      open={open}
     >
       <Row width="100%" alignItems="center" flex="1 auto" minWidth="0">
-        {hasNotification && (
-          <Text
-            color="black"
-            marginLeft={-2}
-            width={2}
-            display="flex"
-            alignItems="center"
-          >
-            <Dot />
-          </Text>
-        )}
         {children}
-
-        <Box
+        <Row
           width="100%"
           flexShrink={2}
           ml={2}
           display="flex"
           overflow="hidden"
+          alignItems="center"
         >
           <Text
             lineHeight="tall"
             display="inline-block"
-            flex="1"
             overflow="hidden"
-            width="100%"
             mono={mono}
             color={color}
+            fontSize={fontSize}
             fontWeight={fontWeight}
-            style={{ textOverflow: "ellipsis", whiteSpace: "pre" }}
+            fontStyle={fontStyle}
+            style={{ textOverflow: 'ellipsis', whiteSpace: 'pre' }}
+            className={selected ? '' : 'hover-underline'}
+            borderBottom={borderBottom}
           >
             {title}
           </Text>
-        </Box>
+          {title === 'Messages' && (
+            <Box style={{ display: 'inline-block', margin: '4px 0 0 16px' }} onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              history.push('/~landscape/messages/new');
+            }}
+            >
+              <Icon icon="Plus" color="gray" pr='12px' />
+            </Box>
+          )}
+          {hasNotification && (
+            <Box>
+              <Icon icon="Bullet" color="blue" />
+            </Box>
+          )}
+          {hasUnread && (
+            <Box
+              px="3px"
+              py="1px"
+              fontSize="10px"
+              minWidth="fit-content"
+              borderRadius="6px"
+              color="white"
+              backgroundColor="darkGray"
+              textAlign="center"
+              ml="6px"
+              mr="6px"
+            >
+              {unreadCount}
+            </Box>
+          )}
+          {locked && (
+            <Icon color="gray" icon="Locked" size={14} ml={hasUnread ? 0 : '6px'} mr="6px" />
+          )}
+        </Row>
+        {isAdmin && (
+          <Box>
+            <Link to={`${to}/new`}>
+              <Row display="flex" alignItems="center">
+                <Icon icon="Plus" color="gray" pl={1} />
+              </Row>
+            </Link>
+          </Box>
+        )}
+        {isApps && (
+          <Box>
+            <Link to={`${to}/new`}>
+              <Row display="flex" alignItems="center">
+                <Icon icon="Plus" color="gray" pl={1} />
+              </Row>
+            </Link>
+          </Box>
+        )}
       </Row>
     </HoverBoxLink>
   );
@@ -125,10 +202,11 @@ function SidebarItemBase(props: {
 export const SidebarPendingItem = (props: {
   path: string;
   selected: boolean;
+  indent?: number;
 }) => {
   const { path, selected } = props;
-  const { preview, error } = usePreview(path);
-  const color = `#${uxToHex(preview?.metadata?.color || "0x0")}`;
+  const { preview } = usePreview(path);
+  const color = `#${uxToHex(preview?.metadata?.color || '0x0')}`;
   const title = preview?.metadata?.title || path;
   const to = `/~landscape/messages/pending/${path.slice(6)}`;
   return (
@@ -139,6 +217,7 @@ export const SidebarPendingItem = (props: {
       hasNotification={false}
       hasUnread={false}
       pending
+      indent={props.indent}
     >
       <Box
         flexShrink={0}
@@ -149,7 +228,7 @@ export const SidebarPendingItem = (props: {
       />
     </SidebarItemBase>
   );
-}
+};
 
 export const SidebarDmItem = React.memo(
   (props: {
@@ -157,10 +236,11 @@ export const SidebarDmItem = React.memo(
     selected?: boolean;
     workspace: Workspace;
     pending?: boolean;
+    indent?: number;
   }) => {
     const { ship, selected = false, pending = false } = props;
     const contact = useContact(ship);
-    const { hideAvatars, hideNicknames } = useSettingsState((s) => s.calm);
+    const { hideAvatars, hideNicknames } = useSettingsState(s => s.calm);
     const title =
       !hideNicknames && contact?.nickname
         ? contact?.nickname
@@ -175,11 +255,15 @@ export const SidebarDmItem = React.memo(
           width="16px"
           height="16px"
           borderRadius={2}
+          onError={({ currentTarget }) => {
+            currentTarget.onerror = null; // prevents looping
+            currentTarget.src = IMAGE_NOT_FOUND;
+          }}
         />
       ) : (
         <Sigil
           ship={ship}
-          color={`#${uxToHex(contact?.color || "0x0")}`}
+          color={`#${uxToHex(contact?.color || '0x0')}`}
           icon
           padding={2}
           size={16}
@@ -189,13 +273,15 @@ export const SidebarDmItem = React.memo(
     return (
       <SidebarItemBase
         selected={selected}
-        hasNotification={false}
-        hasUnread={(unreads as number) > 0}
+        hasNotification={unreads > 0}
+        hasUnread={unreads > 0}
         to={`/~landscape/messages/dm/${ship}`}
         title={title}
         mono={hideAvatars || !contact?.nickname}
         isSynced
         pending={pending}
+        unreadCount={unreads}
+        indent={props.indent}
       >
         {img}
       </SidebarItemBase>
@@ -209,8 +295,14 @@ export const SidebarAssociationItem = React.memo(
     association: Association;
     selected: boolean;
     workspace: Workspace;
+    groupSelected?: boolean;
+    fontSize?: string;
+    unreadCount?: number;
+    hasNotification?: boolean;
+    indent?: number;
   }) => {
     const { association, selected } = props;
+    const history = useHistory();
     const title = association ? getItemTitle(association) || "" : "";
     const appName = association?.["app-name"];
     let mod: string = appName;
@@ -228,7 +320,6 @@ export const SidebarAssociationItem = React.memo(
     const isUnmanaged = group?.hidden || false;
     const DM = isUnmanaged && props.workspace?.type === "messages";
     const itemStatus = useAssociationStatus(rid);
-    const hasNotification = itemStatus === "notification";
     const hasUnread = itemStatus === "unread";
     const isSynced = itemStatus !== "unsubscribed";
     let baseUrl = `/~landscape${association.group}`;
@@ -245,7 +336,11 @@ export const SidebarAssociationItem = React.memo(
 
     const onClick = pending ? () => {
       useGroupState.getState().doneJoin(rid);
-    } : undefined;
+    } : () => {
+      if (group && !history.location.pathname.includes(baseUrl)) {
+        history.push(baseUrl);
+      }
+    };
 
     if (props.hideUnjoined && !isSynced) {
       return null;
@@ -253,26 +348,26 @@ export const SidebarAssociationItem = React.memo(
 
     const participantNames = (str: string) => {
       const color = isSynced
-        ? hasUnread || hasNotification
-          ? "black"
-          : "gray"
-        : "lightGray";
-      if (_.includes(str, ",") && _.startsWith(str, "~")) {
-        const names = _.split(str, ", ");
+        ? hasUnread || props.hasNotification
+          ? 'black'
+          : 'gray'
+        : 'lightGray';
+      if (_.includes(str, ',') && _.startsWith(str, '~')) {
+        const names = _.split(str, ', ');
         return names.map((name, idx) => {
           if (urbitOb.isValidPatp(name)) {
             if (contacts[name]?.nickname && !hideNicknames)
               return (
                 <Text key={name} bold={hasUnread} color={color}>
                   {contacts[name]?.nickname}
-                  {idx + 1 != names.length ? ", " : null}
+                  {idx + 1 != names.length ? ', ' : null}
                 </Text>
               );
             return (
               <Text key={name} mono bold={hasUnread} color={color}>
                 {name}
                 <Text color={color}>
-                  {idx + 1 != names.length ? ", " : null}
+                  {idx + 1 != names.length ? ', ' : null}
                 </Text>
               </Text>
             );
@@ -289,14 +384,18 @@ export const SidebarAssociationItem = React.memo(
       <SidebarItemBase
         to={to}
         selected={selected}
+        groupSelected={props.groupSelected}
         hasUnread={hasUnread}
+        fontSize={props.fontSize}
         isSynced={isSynced}
         title={
           DM && !urbitOb.isValidPatp(title) ? participantNames(title) : title
         }
-        hasNotification={hasNotification}
+        hasNotification={props.hasNotification}
         pending={pending}
         onClick={onClick}
+        unreadCount={props.unreadCount}
+        indent={props.indent}
       >
         {DM ? (
           <Box
@@ -305,13 +404,13 @@ export const SidebarAssociationItem = React.memo(
             width={16}
             borderRadius={2}
             backgroundColor={
-              `#${uxToHex(props?.association?.metadata?.color)}` || "#000000"
+              `#${uxToHex(props?.association?.metadata?.color)}` || '#000000'
             }
           />
         ) : (
           <Icon
             display="block"
-            color={isSynced ? "black" : "lightGray"}
+            color={isSynced ? 'black' : 'lightGray'}
             icon={getModuleIcon(mod as any)}
           />
         )}

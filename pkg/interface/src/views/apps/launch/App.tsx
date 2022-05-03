@@ -14,7 +14,7 @@ import Tile from './components/tiles/tile';
 import './css/custom.css';
 import { createJoinParams, JoinRoute } from '~/views/landscape/components/Join/Join';
 
-const ScrollbarLessBox = styled(Box)`
+export const ScrollbarLessBox = styled(Box)`
   scrollbar-width: none !important;
 
   ::-webkit-scrollbar {
@@ -32,7 +32,7 @@ export const LaunchApp = (): ReactElement | null => {
     <>
       <Helmet defer={false}>
         <title>
-          {notificationsCount ? `(${String(notificationsCount)}) ` : ''}Groups
+          {notificationsCount ? `(${String(notificationsCount)}) ` : ''}EScape
         </title>
       </Helmet>
       <Route path='/join/:ship/:name'>
@@ -92,9 +92,9 @@ export const LaunchApp = (): ReactElement | null => {
                 borderRadius={2}
                 onClick={() => history.push({ search: createJoinParams('groups') })}
               >
-                <Row backgroundColor='white' gapX='2' p={2} height='100%' width='100%' alignItems='center'>
-                  <Icon icon='BootNode' />
-                  <Text fontWeight='medium' whiteSpace='nowrap'>Join Group</Text>
+                <Row backgroundColor="white" gapX="2" p={2} height="100%" width="100%" alignItems="center">
+                  <Icon icon="Plus" />
+                  <Text fontWeight="medium" whiteSpace="nowrap">Join Group</Text>
                 </Row>
               </Button>
             </>

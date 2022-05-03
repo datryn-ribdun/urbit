@@ -52,11 +52,11 @@ const commandIndex = function (currentGroup, groups, associations) {
     ? (association.metadata.vip === 'member-metadata' || isChannelAdmin(group, currentGroup, window.ship))
     : !currentGroup; // home workspace or hasn't loaded
   const workspace = currentGroup || '/home';
-  commands.push(result('Groups: Create', '/~landscape/new', 'Groups', null));
+  commands.push(result('Create Group', '/~landscape/new', 'Uqbar Ui', null));
   if (canAdd) {
-    commands.push(result('Channel: Create', `/~landscape${workspace}/new`, 'Groups', null));
+    commands.push(result('Create Channel', `/~landscape${workspace}/new`, 'Uqbar UI', null));
   }
-  commands.push(result('Groups: Join', createJoinParams('groups'), 'Groups', null));
+  commands.push(result('Join Group', '?join-kind=group', 'Uqbar UI', null));
 
   return commands;
 };
@@ -64,10 +64,10 @@ const commandIndex = function (currentGroup, groups, associations) {
 const otherIndex = function(config) {
   const other = [];
   const idx = {
-    mychannel: result('My Channels', '/~landscape/home', 'home', null),
     profile: result('Profile', `/~profile/~${window.ship}`, 'profile', null),
     updates: result('Notifications', '/~notifications', 'notifications', null),
     messages: result('Messages', '/~landscape/messages', 'messages', null),
+    settings: result('Settings', '/~settings', 'settings', null),
     logout: result('Log Out', '/~/logout', 'logout', null)
   };
   for(const cat of config.categories) {
@@ -116,7 +116,7 @@ export default function index(contacts, associations, currentGroup, groups, hide
             title,
             `/~landscape${each.resource}`,
             app.charAt(0).toUpperCase() + app.slice(1),
-            cite(shipStart.slice(0, shipStart.indexOf('/')))
+            cite(shipStart.slice(0, shipStart.indexOf('/')), true) as string
           );
           landscape.push(obj);
         } else {

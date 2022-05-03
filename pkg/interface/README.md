@@ -1,17 +1,25 @@
-## interface
+## EScape
 
-Landscape is Tlon's suite of userspace applications (and web interface),
-currently bundled as part of Arvo.
-
-This directory comprises the source code for the web interface. For code related
-to the Gall agents that make up the Landscape suite in Arvo, see
-[pkg/arvo][arvo].
+EScape is Uqbar's web UI, forked from Tlon's Landscape app.
 
 ### Contributions and feature requests
 
-For information on how to contribute, see [CONTRIBUTING][cont]. To submit
-a feature request, submit to the product board at [urbit/landscape][land].
+For information on how to contribute, see [CONTRIBUTING][cont].
 
-[arvo]: https://github.com/urbit/urbit/tree/master/pkg/arvo
-[cont]: https://github.com/urbit/urbit/blob/master/pkg/interface/CONTRIBUTING.md
-[land]: https://github.com/urbit/landscape/issues/new?assignees=&labels=feature+request&template=feature_request.md&title=
+### Build Steps
+
+1. Set up a public S3 bucket or similar to enable http glob downloads
+2. Update the package.json `version` number
+3. Run `npm run build:prod`
+4. Spin up a local fakezod
+5. Run `cp -r ~/\*path/to/urbit\*/pkg/interface/dist ~/\*path/to/zod\*/landscape/`
+6. Run `cd ~/\*path/to/zod\*/landscape/dist && rm \*.js.map\*`
+7. Run `urbit zod`
+8. In the dojo run `|commit %landscape`
+9. Then `-garden!make-glob %landscape /dist`
+10. Upload the glob (located in zod/.urb/put/) to your S3 bucket
+11. Add the glob's url and hash to `pkg/escape/desk.docket-0` and update the version number
+12. Push the branch to your repo
+13. Pull the info to your distro ship
+14. Copy to your `escape` desk
+15. In the dojo run `|commit %escape`

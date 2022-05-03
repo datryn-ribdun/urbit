@@ -15,7 +15,7 @@ import airlock from '~/logic/api';
 export function ProfileHeader(props: any): ReactElement {
   return (
     <Box
-      border='1px solid'
+      border={1}
       borderColor='lightGray'
       borderRadius={3}
       overflow='hidden'

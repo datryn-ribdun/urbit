@@ -6,7 +6,7 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { svgDataURL } from '~/logic/lib/util';
 import history from '~/logic/lib/history';
 import { favicon } from '~/logic/state/contact';
-import { SettingsState } from '~/logic/state/settings';
+import useSettingsState, { SettingsState } from '~/logic/state/settings';
 import { ShortcutContextProvider } from '~/logic/lib/shortcutContext';
 
 import ErrorBoundary from '~/views/components/ErrorBoundary';
@@ -20,6 +20,9 @@ import './landscape/css/custom.css';
 import { uxToHex } from '@urbit/api';
 import { useThemeWatcher } from '~/logic/lib/useThemeWatcher';
 import useLocalState from '~/logic/state/local';
+import { MobileNavbar } from '~/views/components/navigation/MobileNavbar';
+import { IS_MOBILE } from '~/logic/lib/platform';
+import withState from '~/logic/lib/withState';
 
 function ensureValidHex(color) {
   if (!color)
@@ -42,46 +45,50 @@ interface RootProps {
   display: SettingsState['display'];
 }
 
-const Root = styled.div<RootProps>`
-  font-family: ${p => p.theme.fonts.sans};
-  height: 100%;
-  width: 100%;
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-
-  margin: 0;
-  ${p => p.display.backgroundType === 'url' ? `
+const Root = withState(
+  styled.div`
+    font-family: ${p => p.theme.fonts.sans};
+    height: 100%;
+    width: 100%;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    margin: 0;
+    ${p =>
+      p.display.backgroundType === 'url'
+        ? `
     background-image: url('${p.display.background}');
     background-size: cover;
-    ` : p.display.backgroundType === 'color' ? `
+    `
+        : p.display.backgroundType === 'color'
+        ? `
     background-color: ${ensureValidHex(p.display.background)};
-    ` : `background-color: ${p.theme.colors.white};`
-  }
-  display: flex;
-  flex-flow: column nowrap;
-  touch-action: none;
-
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: ${ p => p.theme.colors.gray } transparent;
-  }
-
-  /* Works on Chrome/Edge/Safari */
-  *::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  *::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  *::-webkit-scrollbar-thumb {
-    background-color: ${ p => p.theme.colors.gray };
-    border-radius: 1rem;
-    border: 0px solid transparent;
-  }
-`;
+    `
+        : `background-color: ${p.theme.colors.white};`}
+    display: flex;
+    flex-flow: column nowrap;
+    touch-action: none;
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: ${p => p.theme.colors.gray} transparent;
+    }
+    /* Works on Chrome/Edge/Safari */
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+      background-color: ${p => p.theme.colors.gray};
+      border-radius: 1rem;
+      border: 0px solid transparent;
+    }
+  `,
+  [[useSettingsState, ['display']]]
+);
 
 const StatusBarWithRouter = withRouter(StatusBar);
 
@@ -104,15 +111,18 @@ const App: React.FunctionComponent = () => {
       </Helmet>
       <Root display={display}>
         <Router history={history}>
-          <ErrorBoundary>
+          {!IS_MOBILE && <ErrorBoundary>
             <StatusBarWithRouter />
-          </ErrorBoundary>
+          </ErrorBoundary>}
           <ErrorBoundary>
             <Omnibox />
           </ErrorBoundary>
           <ErrorBoundary>
             <Content />
           </ErrorBoundary>
+          {IS_MOBILE && <ErrorBoundary>
+            <MobileNavbar />
+          </ErrorBoundary>}
         </Router>
       </Root>
       <div id="portal-root" />
@@ -122,4 +132,3 @@ const App: React.FunctionComponent = () => {
 };
 
 export default App;
-

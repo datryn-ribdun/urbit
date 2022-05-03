@@ -1,7 +1,7 @@
-import { Box, Center, Col, LoadingSpinner, Text } from '@tlon/indigo-react';
+import { Box, Center, Col, Icon, LoadingSpinner, Text } from '@tlon/indigo-react';
 import { Association, deSig, Group } from '@urbit/api';
 import bigInt from 'big-integer';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link, Route, Switch, useLocation } from 'react-router-dom';
 import { useQuery } from '~/logic/lib/useQuery';
 import { Titlebar } from '~/views/components/Titlebar';
@@ -12,6 +12,8 @@ import { LinkBlocks } from './components/LinkBlocks';
 import { LinkDetail } from './components/LinkDetail';
 import './css/custom.css';
 import LinkWindow from './LinkWindow';
+import { getPermalinkForGraph } from '~/logic/lib/permalinks';
+import { useCopy } from '~/logic/lib/useCopy';
 
 interface LinkResourceProps {
   association: Association;
@@ -31,6 +33,8 @@ export function LinkResource(props: LinkResourceProps) {
 
   const [, , ship, name] = rid.split('/');
   const resourcePath = `${deSig(ship)}/${name}`;
+  const permalink = useMemo(() => getPermalinkForGraph(association.group, association.resource), [association]);
+  const { doCopy, copyDisplay } = useCopy(permalink, <Icon icon='Copy' color='gray' pr={2} />, <Icon icon='Checkmark' color='gray' pr={2} />);
   const resource: any = associations.graph[rid]
     ? associations.graph[rid]
     : { metadata: {} };
@@ -41,7 +45,7 @@ export function LinkResource(props: LinkResourceProps) {
   const graph = graphs[resourcePath] || null;
   const graphTimesentMap = useGraphState(state => state.graphTimesentMap);
   const { query } = useQuery();
-  const isList = query.has('list');
+  const isGrid = query.has('grid');
   const { pathname, search } = useLocation();
   const getGraph = useGraphState(s => s.getGraph);
 
@@ -55,13 +59,20 @@ export function LinkResource(props: LinkResourceProps) {
   }
   const { title, description } = resource.metadata;
 
+  const copyControl = (
+    <Box onClick={doCopy} cursor="pointer">
+      {copyDisplay}
+    </Box>
+  );
+
   const titlebar = (back?: string) => (
     <Titlebar back={back && `${back}${search}`} title={title} description={description} workspace={baseUrl} baseUrl={resourceUrl} >
-      <Link to={{ pathname, search: isList ? '' : '?list=true' }}>
+      <Link to={{ pathname, search: isGrid ? '' : '?grid=true' }}>
         <Text bold pr='3' color='blue'>
-          Switch to {!isList ? 'list' : 'grid' }
+          Switch to {isGrid ? 'list' : 'grid' }
         </Text>
       </Link>
+      {copyControl}
     </Titlebar>
   );
 
@@ -74,7 +85,7 @@ export function LinkResource(props: LinkResourceProps) {
           return (
             <Col minWidth="0" overflow="hidden">
               {titlebar()}
-              { isList ?  /* @ts-ignore withState typings */ (
+              { !isGrid ?  /* @ts-ignore withState typings */ (
                   <LinkWindow
                     key={rid}
                     association={resource}
@@ -88,7 +99,7 @@ export function LinkResource(props: LinkResourceProps) {
                   />
               ) : (
                 <LinkBlocks key={rid} graph={graph} association={resource} />
-                )}
+              )}
           </Col>
           );
         }}

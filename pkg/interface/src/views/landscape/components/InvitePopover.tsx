@@ -18,6 +18,7 @@ import { AsyncButton } from '~/views/components/AsyncButton';
 import { FormError } from '~/views/components/FormError';
 import { ShipSearch } from '~/views/components/ShipSearch';
 import airlock from '~/logic/api';
+import useGroupState from '~/logic/state/group';
 
 interface InvitePopoverProps {
   baseUrl: string;
@@ -43,11 +44,15 @@ export function InvitePopover(props: InvitePopoverProps) {
   const { title } = association?.metadata || { title: '' };
   const innerRef = useRef(null);
   const history = useHistory();
+  const { groups } = useGroupState();
 
   const onOutsideClick = useCallback(() => {
     history.push(props.baseUrl);
   }, [history.push, props.baseUrl]);
   useOutsideClick(innerRef, onOutsideClick);
+
+  const group = groups[association?.group];
+  const members = Array.from(group?.members || []);
 
   const onSubmit = async ({ ships, description }: FormSchema, actions) => {
     //  TODO: how to invite via email?
@@ -111,6 +116,7 @@ export function InvitePopover(props: InvitePopoverProps) {
                     id="ships"
                     label=""
                     autoFocus
+                    excluded={members}
                   />
                   <Input
                     id="description"

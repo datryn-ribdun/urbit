@@ -7,6 +7,7 @@ import { enableMapSet } from 'immer';
 /* eslint-disable max-lines */
 import bigInt, { BigInteger } from 'big-integer';
 import { IconRef, Workspace } from '~/types';
+import { Text } from '@tlon/indigo-react';
 
 enableMapSet();
 
@@ -287,10 +288,22 @@ export function writeText(str: string | null): Promise<void> {
   });
 }
 
+export const citeNickname = (ship: string, showNickname?: boolean, nickname?: string) => {
+  if (showNickname) {
+    if (ship.length === 27) {
+      return <>{nickname} <Text mono gray>{cite(ship)}</Text></>;
+    } else {
+      return <>{nickname} <Text mono gray>{cite(ship)}</Text></>;
+    }
+  }
+
+  return cite(ship);
+};
+
 // trim patps to match dojo, chat-cli
-export function cite(ship: string): string {
+export function cite(ship: string, useOldFormat = false): string | Element {
   let patp = ship,
-    shortened = '';
+    shortened: string | Element = '';
   if (patp === null || patp === '') {
     return '';
   }
@@ -304,7 +317,14 @@ export function cite(ship: string): string {
   }
   // moon
   if (patp.length === 27) {
-    shortened = '~' + patp.slice(14, 20) + '^' + patp.slice(21, 27);
+    if (useOldFormat) {
+      shortened = '~' + patp.slice(14, 20) + '^' + patp.slice(21, 27);
+    } else {
+      shortened = <>
+        <Text mono fontSize="10px" verticalAlign="top">~{patp.slice(0, 13)}</Text>
+        {'^' + patp.slice(14, 27)}
+      </>;
+    }
     return shortened;
   }
   return `~${patp}`;
