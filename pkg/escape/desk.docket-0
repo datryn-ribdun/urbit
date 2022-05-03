@@ -4,7 +4,7 @@
     glob-http+['https://escape-app-dist.s3.us-east-2.amazonaws.com/glob-0v1.faq85.mg196.q41ff.3kn2f.2s40k.glob' 0v1.faq85.mg196.q41ff.3kn2f.2s40k]
     base+'escape'
     image+'https://escape-app-dist.s3.us-east-2.amazonaws.com/uqbar-logo.png'
-    version+[0 3 4]
+    version+[0 3 5]
     website+'https://uqbar.network'
     license+'MIT'
 ==
