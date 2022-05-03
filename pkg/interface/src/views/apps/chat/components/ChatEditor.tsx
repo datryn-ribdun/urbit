@@ -195,7 +195,7 @@ const ChatEditor = React.forwardRef<CodeMirrorShim, ChatEditorProps>(({
 
     if (e.key === 'Escape') {
       setShowEmojiPicker(false);
-      editor.getInputField().blur();
+      editor?.getInputField()?.blur();
       return;
     }
 
@@ -337,7 +337,7 @@ const ChatEditor = React.forwardRef<CodeMirrorShim, ChatEditorProps>(({
         if (hasSuggestions) {
           setAutoCompleteSuggestions([]);
           setDisableAutocomplete(true);
-          setTimeout(() => editor?.getInputField().focus(), 1);
+          setTimeout(() => editor?.getInputField()?.focus(), 1);
         } else {
           editor?.getInputField().blur();
         }

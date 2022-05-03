@@ -207,14 +207,15 @@ export const Message = React.memo(({
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   return (
-    <Row width="100%" onClick={(e) => {
-      if (collapsed) {
-        e.preventDefault();
-        e.stopPropagation();
-        setCollapsed(!collapsed);
-      }
-    }}
-    onMouseEnter={() => inputRef?.current?.getInputField().blur()}
+    <Row width="100%"
+      onClick={(e) => {
+        if (collapsed) {
+          e.preventDefault();
+          e.stopPropagation();
+          setCollapsed(!collapsed);
+        }
+      }}
+      onMouseEnter={() => inputRef?.current?.getInputField()?.blur()}
     >
       {defaultCollapsed && (
         <Icon

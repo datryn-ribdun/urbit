@@ -78,16 +78,22 @@ export function MobileNavbar() {
 
   useEffect(() => {
     const { innerWidth, innerHeight } = window;
-    document.write([
-        '<style>',
-        '.mobileNavbar { display: none; }',
-        '@media screen and (orientation: portrait) and (min-height: ' + (Math.max(innerWidth, innerHeight) - 10) + 'px)',
-        '{ .mobileNavbar { display: inherit; } }',
-        '@media screen and (orientation: landscape) and (min-height: ' + (Math.min(innerWidth, innerHeight) - 30) + 'px)',
-        '{ .mobileNavbar { display: inherit; } }',
-        '</style>'
-    ].join(' '));
-  }, []);
+
+    const css = [
+      '.mobileNavbar { display: none; }',
+      '@media screen and (orientation: portrait) and (min-height: ' + (Math.max(innerWidth, innerHeight) - 10) + 'px)',
+      '{ .mobileNavbar { display: inherit; } }',
+      '@media screen and (orientation: landscape) and (min-height: ' + (Math.min(innerWidth, innerHeight) - 30) + 'px)',
+      '{ .mobileNavbar { display: inherit; } }'
+    ].join(' '),
+      head = document.head || document.getElementsByTagName('head')[0],
+      style = document.createElement('style');
+
+    head.appendChild(style);
+
+    style.type = 'text/css';
+    style.appendChild(document.createTextNode(css));
+   }, []);
 
   const options: NavItemLinkProps[] = useMemo(() => [
     {

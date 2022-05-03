@@ -177,21 +177,17 @@ export function SidebarItemBase(props: {
           )}
         </Row>
         {isAdmin && (
-          <Box>
-            <Link to={`${to}/new`}>
-              <Row display="flex" alignItems="center">
-                <Icon icon="Plus" color="gray" pl={1} />
-              </Row>
-            </Link>
+          <Box onClick={() => history.push(`${to}/new`)}>
+            <Row display="flex" alignItems="center">
+              <Icon icon="Plus" color="gray" pl={1} />
+            </Row>
           </Box>
         )}
         {isApps && (
-          <Box>
-            <Link to={`${to}/new`}>
-              <Row display="flex" alignItems="center">
-                <Icon icon="Plus" color="gray" pl={1} />
-              </Row>
-            </Link>
+          <Box onClick={() => history.push(`${to}/new`)}>
+            <Row display="flex" alignItems="center">
+              <Icon icon="Plus" color="gray" pl={1} />
+            </Row>
           </Box>
         )}
       </Row>

@@ -198,9 +198,9 @@ export function SidebarGroupList({
       {groupOrder.length ? groupOrder.map((go) => {
         if (typeof go === 'string') {
           if (go === 'My Channels') {
-            return <SidebarGroup {...props} workspace={{ type: 'home' }} />;
+            return <SidebarGroup key={go} {...props} workspace={{ type: 'home' }} />;
           } else if (go === 'My Apps') {
-            return <MyApps {...props} />;
+            return <MyApps key={go} {...props} />;
           }
 
           const g = associations.groups[go];
@@ -209,10 +209,8 @@ export function SidebarGroupList({
 
           return <SidebarGroup key={g.group} {...props} workspace={{ type: 'group', group: g.group }} title={g.metadata.title} />;
         } else if (go?.folder) {
-          return <SidebarFolder {...props} toggleCollapse={toggleCollapse(go.folder)} {...props} folder={go} />;
+          return <SidebarFolder key={go.folder} {...props} toggleCollapse={toggleCollapse(go.folder)} {...props} folder={go} />;
         }
-
-        // TODO: handle folders in groupOrder
         return null;
       }) : (
         <>
