@@ -82,7 +82,7 @@ export const Content = () => {
           <Route
             exact
             path="/"
-            component={LaunchApp}
+            component={Landscape}
           />
           <Route path='/~landscape'>
             <Landscape />

@@ -1,7 +1,7 @@
 import React, { ReactElement, useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import _ from 'lodash';
-import { Associations, Timebox } from '@urbit/api';
+import { Associations, Timebox, roleForShip } from '@urbit/api';
 import { Box, Icon } from '@tlon/indigo-react';
 
 import useGraphState, { useInbox } from '~/logic/state/graph';
@@ -12,7 +12,6 @@ import { useShortcut } from '~/logic/state/settings';
 import useGroupState from '~/logic/state/group';
 import useInviteState from '~/logic/state/invite';
 import { IS_MOBILE } from '~/logic/lib/platform';
-import { roleForShip } from '~/logic/lib/group';
 import { Workspace } from '~/types/workspace';
 import { getGraphUnreads } from '~/views/apps/launch/components/Groups';
 import { SidebarListConfig } from './types';

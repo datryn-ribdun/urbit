@@ -130,81 +130,6 @@ export function GroupSwitcher(props: {
         borderColor='lightGray'
         borderTopLeftRadius={4}
       >
-        {/* <Col
-          bg="white"
-          width="100%"
-          height="100%"
-        >
-          <Row flexGrow={1} alignItems="center" justifyContent="space-between">
-            <Dropdown
-              width="auto"
-              dropWidth="231px"
-              alignY="top"
-              options={
-                <Col
-                  borderRadius={1}
-                  border={1}
-                  borderColor="lightGray"
-                  bg="white"
-                  width="100%"
-                  alignItems="stretch"
-                >
-                    <GroupSwitcherItem to="">
-                    <Icon
-                      mr={2}
-                      color="gray"
-                      display="block"
-                      icon="Groups"
-                    />
-                    <Text>All Groups</Text>
-                  </GroupSwitcherItem>
-                  <RecentGroups
-                    recent={props.recentGroups}
-                  />
-                  <GroupSwitcherItem to="/~landscape/new">
-                    <Icon mr={2} color="gray" icon="CreateGroup" />
-                    <Text> New Group</Text>
-                  </GroupSwitcherItem>
-                  <GroupSwitcherItem to="/~landscape/join">
-                    <Icon mr={2} color="gray" icon="Plus" />
-                    <Text> Join Group</Text>
-                  </GroupSwitcherItem>
-                  {workspace.type === 'group' && (
-                    <>
-                      <GroupSwitcherItem to={navTo('/popover/participants')}>
-                        <Icon
-                          mr={2}
-                          color="gray"
-                          icon="Node"
-                        />
-                        <Text> Participants</Text>
-                      </GroupSwitcherItem>
-                      <GroupSwitcherItem to={navTo(path)}>
-                        <Icon
-                          mr={2}
-                          color="gray"
-                          icon="Gear"
-                        />
-                        <Text> Group Settings</Text>
-                      </GroupSwitcherItem>
-                      {isAdmin && (<GroupSwitcherItem bottom to={navTo('/invites')}>
-                        <Icon
-                          mr={2}
-                          color="blue"
-                          icon="Users"
-                        />
-                        <Text color="blue">Invite to group</Text>
-                      </GroupSwitcherItem>)}
-                    </>
-                  )}
-                </Col>
-              }>
-              <Button p={2} mr={3} onClick={() => setTimeout(() => inputRef?.current?.focus(), 50)}>
-                <Icon icon="Plus" />
-              </Button>
-            </Dropdown>
-          </Row>
-        </Col> */}
         <Row alignItems="center" cursor='pointer' onClick={() => setChangingSort(!changingSort)}>
           <Icon icon="ArrowWest" size="20px" ml="-8px" mr={2} />
           <H3>Order Groups</H3>
@@ -269,7 +194,7 @@ export function GroupSwitcher(props: {
         height="100%"
       >
         <Row flexGrow={1} alignItems="center" justifyContent="space-between">
-          <Dropdown
+        <Dropdown
             width="100%"
             dropWidth="231px"
             alignY="top"
@@ -327,46 +252,28 @@ export function GroupSwitcher(props: {
             <Row className="title-row" flexWrap="wrap" flexGrow={1} alignItems="center" justifyContent="space-between" width='100%' minWidth={0} flexShrink={0}>
               <Row flexGrow={1} alignItems="center" minWidth={0} flexShrink={0} width={showTitleActions ? 'auto' : '100%'} py={2}>
                 { metadata && <MetadataIcon flexShrink={0} mr={2} metadata={metadata} height="24px" width="24px" /> }
-                <Text flexShrink={1} lineHeight="1.1" fontSize={2} fontWeight="600" overflow='hidden' display='inline-block' style={{ textOverflow: 'ellipsis', whiteSpace: 'pre' }}>{title}</Text>
+                {IS_MOBILE && workspace.type === 'uqbar-home' ? (
+                  <Text mono flexShrink={1} lineHeight="1.1" fontSize={2} fontWeight="600" overflow='hidden' display='inline-block' maxWidth="100%" style={{ textOverflow: 'ellipsis', whiteSpace: 'pre' }}>
+                    ~{window.ship}
+                  </Text>
+                ) : (
+                  <Text flexShrink={1} lineHeight="1.1" fontSize={2} fontWeight="600" overflow='hidden' display='inline-block' style={{ textOverflow: 'ellipsis', whiteSpace: 'pre' }}>
+                    {title}
+                  </Text>
+                )}
+                {props.workspace?.type === 'uqbar-home' && <Icon icon="Plus" ml={2} />}
               </Row>
+              {showTitleActions && (
+                <TitleActions
+                  baseUrl={props.baseUrl}
+                  initialValues={config}
+                  handleSubmit={setConfig}
+                  workspace={workspace}
+                  toggleChangingSort={() => setChangingSort(!changingSort)}
+                />
+              )}
             </Row>
           </Dropdown>
-          <Row pr={3} verticalAlign="middle">
-            {(workspace.type === 'group') && (
-              <>
-                {isAdmin && (<Link to={navTo('/invites')}>
-                  <Icon
-                    display="inline-block"
-                    color='blue'
-                    icon="Users"
-                    ml='12px'
-                  />
-                </Link>)}
-                <Link to={navTo(path)}>
-                  <Icon color='gray' display="inline-block" ml={'12px'} icon="Gear" />
-                </Link>
-              </>
-            )}
-            {IS_MOBILE && workspace.type === 'uqbar-home' ? (
-              <Text mono flexShrink={1} lineHeight="1.1" fontSize={2} fontWeight="600" overflow='hidden' display='inline-block' maxWidth="100%" style={{ textOverflow: 'ellipsis', whiteSpace: 'pre' }}>
-                ~{window.ship}
-              </Text>
-            ) : (
-              <Text flexShrink={1} lineHeight="1.1" fontSize={2} fontWeight="600" overflow='hidden' display='inline-block' style={{ textOverflow: 'ellipsis', whiteSpace: 'pre' }}>
-                {title}
-              </Text>
-            )}
-            {props.workspace?.type === 'uqbar-home' && <Icon icon="Plus" ml={2} />}
-          </Row>
-          {showTitleActions && (
-            <TitleActions
-              baseUrl={props.baseUrl}
-              initialValues={config}
-              handleSubmit={setConfig}
-              workspace={workspace}
-              toggleChangingSort={() => setChangingSort(!changingSort)}
-            />
-          )}
           <Row pr={3} verticalAlign="middle">
             {(workspace.type === 'group') && (
               <>

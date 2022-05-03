@@ -68,7 +68,6 @@ export function GroupsPane(props: GroupsPaneProps) {
       getShallowChildren
     } = useGraphState.getState();
     const dmGraph = graphs[`${deSig(window.ship)}/dm-inbox`];
-    console.log(graphs, dmGraph);
 
     if (graphKeys.size === 0) {
       getKeys();

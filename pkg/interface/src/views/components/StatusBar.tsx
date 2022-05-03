@@ -86,7 +86,7 @@ const StatusBar = () => {
           width='32px'
           borderColor='lightGray'
           mr={2}
-          px={2}
+          px={1}
         >
           <Image
             referrerPolicy="no-referrer"

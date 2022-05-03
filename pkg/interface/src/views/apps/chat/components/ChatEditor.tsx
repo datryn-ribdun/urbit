@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import React, { useRef, useState, ClipboardEvent, useEffect, useImperativeHandle, useCallback, useMemo } from 'react';
 import { BaseTextArea, Box, Icon, Row } from '@tlon/indigo-react';
-import { Association, Group, invite } from '@urbit/api';
+import { Association, Group, invite, resourceFromPath } from '@urbit/api';
 import * as ob from 'urbit-ob';
 import 'codemirror/addon/display/placeholder';
 import 'codemirror/addon/hint/show-hint';
@@ -11,7 +11,6 @@ import { Controlled as CodeEditor } from 'react-codemirror2';
 import styled from 'styled-components';
 import { MOBILE_BROWSER_REGEX } from '~/logic/lib/util';
 import useSettingsState from '~/logic/state/settings';
-import { resourceFromPath } from '~/logic/lib/group';
 import airlock from '~/logic/api';
 import { useDark } from '~/logic/state/join';
 import { useChatStore, useReplyStore } from '~/logic/state/chat';

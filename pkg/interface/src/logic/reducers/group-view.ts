@@ -23,14 +23,18 @@ const started = (json: any, state: GroupState): GroupState => {
 const progress = (json: any, state: GroupState): GroupState => {
   const data = json.progress;
   if(data) {
-    const { progress, resource } = data;
-    state.pendingJoin[resource].progress = progress;
-    if(progress === 'done') {
-      setTimeout(() => {
-        useGroupState.getState().set((state) => {
-          delete state.pendingJoin[resource];
-        });
-      }, 10000);
+    try {
+      const { progress, resource } = data;
+      state.pendingJoin[resource].progress = progress;
+      if(progress === 'done') {
+        setTimeout(() => {
+          useGroupState.getState().set((state) => {
+            delete state.pendingJoin[resource];
+          });
+        }, 10000);
+      }
+    } catch (e) {
+      console.warn('ERROR SETTING GROUP PROGRESS');
     }
   }
   return state;
