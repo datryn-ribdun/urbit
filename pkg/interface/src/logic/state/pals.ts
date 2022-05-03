@@ -1,5 +1,5 @@
 import create, { SetState } from 'zustand';
-import airlock from '~logic/api';
+import airlock from '~/logic/api';
 
 interface Outgoing {
   lists: string[];
@@ -71,7 +71,7 @@ const usePalsState = create<PalsState>((set, get) => ({
     get().pals.outgoing[ship] = { ack: true, lists: tags };
   },
   removePal: async (ship: string) => {
-    return airlock.poke({
+    await airlock.poke({
       app: 'pals',
       mark: 'pals-command',
       json: {

@@ -12,22 +12,21 @@ import useStorageState from '../state/storage';
 import gcpManager from '../lib/gcpManager';
 
 export async function bootstrapApi(reset = false) {
-  if (reset) {
-    airlock.reset();
-
-    const isResourceView = window.location.href.match(/\/resource\/[a-z]*?\/ship\//);
-    if (isResourceView) {
-      return;
-    }
+  const isResourceView = window.location.href.match(/\/resource\/[a-z]*?\/ship\//);
+  if (isResourceView) {
+    return;
   }
 
-  airlock.reset();
+  if (reset) {
+    airlock.reset();
+  }
+
   airlock.onError = (e) => {
     (async () => {
       const { reconnect, errorCount, set } = useLocalState.getState();
       console.log(errorCount);
       if(errorCount > 1) {
-        set(s => {
+        set((s) => {
           s.subscription = 'disconnected';
         });
         return;
@@ -76,5 +75,3 @@ export async function bootstrapApi(reset = false) {
   getKeys();
   getShallowChildren(`~${window.ship}`, 'dm-inbox');
 }
-
-window.bootstrapApi = bootstrapApi;

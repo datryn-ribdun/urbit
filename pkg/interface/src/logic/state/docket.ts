@@ -1,5 +1,5 @@
 import create, { SetState } from 'zustand';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { omit, pick } from 'lodash';
 import {
   Allies,
@@ -22,8 +22,8 @@ import {
   kilnSuspend,
   allyShip
 } from '@urbit/api';
-import airlock from '~logic/api';
-import { useAsyncCall } from '~/logic/lib/hooks/useAsyncCall';
+import api from '~/logic/api';
+import { Status } from '../lib/hooks/useAsyncCall';
 import { normalizeUrbitColor } from '../util/color';
 
 export interface ChargeWithDesk extends Charge {
@@ -59,11 +59,11 @@ interface DocketState {
 const useDocketState = create<DocketState>((set, get) => ({
   defaultAlly: null,
   fetchDefaultAlly: async () => {
-    const defaultAlly = await airlock.scry<string>(scryDefaultAlly);
+    const defaultAlly = await api.scry<string>(scryDefaultAlly);
     set({ defaultAlly });
   },
   fetchCharges: async () => {
-    const charg = (await airlock.scry<ChargeUpdateInitial>(scryCharges)).initial;
+    const charg = (await api.scry<ChargeUpdateInitial>(scryCharges)).initial;
 
     const charges = Object.entries(charg).reduce((obj: ChargesWithDesks, [key, value]) => {
       // eslint-disable-next-line no-param-reassign
@@ -74,25 +74,24 @@ const useDocketState = create<DocketState>((set, get) => ({
     set({ charges });
   },
   fetchAllies: async () => {
-    const allies = (await airlock.scry<AllyUpdateIni>(scryAllies)).ini;
+    const allies = (await api.scry<AllyUpdateIni>(scryAllies)).ini;
     set({ allies });
     return allies;
   },
   fetchAllyTreaties: async (ally: string) => {
-    let treaties = (await airlock.scry<TreatyUpdateIni>(scryAllyTreaties(ally))).ini;
+    let treaties = (await api.scry<TreatyUpdateIni>(scryAllyTreaties(ally))).ini;
     treaties = normalizeDockets(treaties);
     set(s => ({ treaties: { ...s.treaties, ...treaties } }));
     return treaties;
   },
   requestTreaty: async (ship: string, desk: string) => {
     const { treaties } = get();
-
     const key = `${ship}/${desk}`;
     if (key in treaties) {
       return treaties[key];
     }
 
-    const result = await airlock.subscribeOnce('treaty', `/treaty/${key}`, 20000);
+    const result = await api.subscribeOnce('treaty', `/treaty/${key}`, 20000);
     const treaty = { ...normalizeDocket(result, desk), ship };
     set(state => ({
       treaties: { ...state.treaties, [key]: treaty }
@@ -105,12 +104,11 @@ const useDocketState = create<DocketState>((set, get) => ({
       throw new Error('Bad install');
     }
     set(state => addCharge(state, desk, { ...treaty, chad: { install: null } }));
-
-    return airlock.poke(docketInstall(ship, desk));
+    return api.poke(docketInstall(ship, desk));
   },
   uninstallDocket: async (desk: string) => {
     set(state => delCharge(state, desk));
-    await airlock.poke({
+    await api.poke({
       app: 'docket',
       mark: 'docket-uninstall',
       json: desk
@@ -124,9 +122,9 @@ const useDocketState = create<DocketState>((set, get) => ({
     }
     const suspended = 'suspend' in charge.chad;
     if (suspended) {
-      await airlock.poke(kilnRevive(desk));
+      await api.poke(kilnRevive(desk));
     } else {
-      await airlock.poke(kilnSuspend(desk));
+      await api.poke(kilnSuspend(desk));
     }
   },
   treaties: {},
@@ -137,7 +135,7 @@ const useDocketState = create<DocketState>((set, get) => ({
       draft.allies[ship] = [];
     });
 
-    return airlock.poke(allyShip(ship));
+    return api.poke(allyShip(ship));
   },
   set
 }));
@@ -167,7 +165,7 @@ function delCharge(state: DocketState, desk: string) {
   return { charges: omit(state.charges, desk) };
 }
 
-airlock.subscribe({
+api.subscribe({
   app: 'docket',
   path: '/charges',
   event: (data: ChargeUpdate) => {
@@ -187,7 +185,7 @@ airlock.subscribe({
   }
 });
 
-airlock.subscribe({
+api.subscribe({
   app: 'treaty',
   path: '/treaties',
   event: (data: TreatyUpdate) => {
@@ -206,7 +204,7 @@ airlock.subscribe({
   }
 });
 
-airlock.subscribe({
+api.subscribe({
   app: 'treaty',
   path: '/allies',
   event: (data: AllyUpdateNew) => {
@@ -243,17 +241,38 @@ export function useAllies() {
 
 export function useAllyTreaties(ship: string) {
   const allies = useAllies();
-  const { call: fetchTreaties, status } = useAsyncCall(() =>
-    useDocketState.getState().fetchAllyTreaties(ship)
-  );
+  const isAllied = ship in allies;
+  const [status, setStatus] = useState<Status>('initial');
+  const [treaties, setTreaties] = useState<Treaties>();
 
   useEffect(() => {
-    if (ship in allies) {
-      fetchTreaties();
+    if (Object.keys(allies).length > 0 && !isAllied) {
+      setStatus('loading');
+      useDocketState.getState().addAlly(ship);
     }
-  }, [ship, allies]);
+  }, [allies, isAllied, ship]);
 
-  const treaties = useDocketState(
+  useEffect(() => {
+    async function fetchTreaties() {
+      if (isAllied) {
+        setStatus('loading');
+        try {
+          const newTreaties = await useDocketState.getState().fetchAllyTreaties(ship);
+
+          if (Object.keys(newTreaties).length > 0) {
+            setTreaties(newTreaties);
+            setStatus('success');
+          }
+        } catch {
+          setStatus('error');
+        }
+      }
+    }
+
+    fetchTreaties();
+  }, [ship, isAllied]);
+
+  const storeTreaties = useDocketState(
     useCallback(
       (s) => {
         const charter = s.allies[ship];
@@ -263,7 +282,24 @@ export function useAllyTreaties(ship: string) {
     )
   );
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setStatus('error');
+    }, 30 * 1000); // wait 30 secs before timing out
+
+    if (Object.keys(storeTreaties).length > 0) {
+      setTreaties(storeTreaties);
+      setStatus('success');
+      clearTimeout(timeout);
+    }
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [storeTreaties]);
+
   return {
+    isAllied,
     treaties,
     status
   };
