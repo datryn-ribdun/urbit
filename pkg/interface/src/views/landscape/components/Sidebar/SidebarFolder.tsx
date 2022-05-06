@@ -5,7 +5,7 @@ import { Box } from '@tlon/indigo-react';
 
 import useHarkState from '~/logic/state/hark';
 import useMetadataState from '~/logic/state/metadata';
-import { useDark } from '~/logic/state/join';
+import { useThemeWatcher } from '~/logic/lib/useThemeWatcher';
 import { getGraphUnreads } from '~/views/apps/launch/components/Groups';
 import { GroupFolder } from './SidebarGroupSorter';
 import { SidebarItemBase } from './SidebarItem';
@@ -28,12 +28,13 @@ export const SidebarFolder = ({
   const graphUnreads = getGraphUnreads(associations || ({} as Associations));
   const { unseen } = useHarkState();
   const collapsed = Boolean(folder.collapsed);
-  const dark = useDark();
+  const { theme } = useThemeWatcher();
+
   const folderIconStyle = {
     height: '14px',
     width: '18px',
     paddingTop: '3px',
-    color: dark ? 'white' : 'black'
+    color: theme.colors.black
   };
 
   const { unreadCount, hasNotification, hasGroupSelected } = folder.groups.reduce((acc, group) => {

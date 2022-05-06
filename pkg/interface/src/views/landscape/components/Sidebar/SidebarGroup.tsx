@@ -20,6 +20,8 @@ import { SidebarAssociationItem, SidebarDmItem, SidebarItemBase, SidebarPendingI
 import { getGroupFromWorkspace } from '~/logic/lib/workspace';
 import { useLocalStorageState } from '~/logic/lib/useLocalStorageState';
 
+const GROUP_DM_REGEX = /[0-9]{4}\.[0-9]+.[0-9]+\.\.[0-9]{2}\.[0-9]{2}.[0-9]{2}/;
+
 export const getHasNotification = (associations: Associations, group: string, unseen: Timebox) => {
   let hasNotification = false;
   for (const key in unseen) {
@@ -191,7 +193,7 @@ export function SidebarGroup({ baseUrl, selected, showOnlyUnread, workspace, tit
             const isPending = pending.includes(pathOrShip);
             const channelSelected = pathOrShip === selected;
 
-            if (showOnlyUnread && !isDm && !channelSelected && (count + each.length) === 0) {
+            if (showOnlyUnread && !isDm && !channelSelected && (count + each.length) === 0 && !pathAsGraph.match(GROUP_DM_REGEX)) {
               return null;
             }
 

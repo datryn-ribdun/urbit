@@ -6,10 +6,10 @@ import { Box, Button, Col, Icon, Label, Row, Text } from '@tlon/indigo-react';
 import useMetadataState from '~/logic/state/metadata';
 import { Dropdown } from '~/views/components/Dropdown';
 import styled from 'styled-components';
-import { useDark } from '~/logic/state/join';
 import { useModal } from '~/logic/lib/useModal';
 import { useLocalStorageState } from '~/logic/lib/useLocalStorageState';
 import { Associations } from '@urbit/api';
+import { useThemeWatcher } from '~/logic/lib/useThemeWatcher';
 
 export const getEntryTitle = (g: string | GroupFolder, a: Associations) : string | null => {
   if (!g)
@@ -98,9 +98,9 @@ function FolderCard({
   getTitle,
   deleteFolder
 }: FolderCardProps) {
-  const dark = useDark();
+  const { theme } = useThemeWatcher();
   const [collapsed, setCollapsed] = useState(false);
-  const folderStyle = { height: '14px', width: '18px', padding: '4px', marginLeft: '-4px', color: dark ? 'white' : 'black' };
+  const folderStyle = { height: '14px', width: '18px', padding: '4px', marginLeft: '-4px', color: theme.colors.black };
 
   return (
     <Draggable key={group} draggableId={group} index={index}>

@@ -12,11 +12,11 @@ import styled from 'styled-components';
 import { MOBILE_BROWSER_REGEX } from '~/logic/lib/util';
 import useSettingsState from '~/logic/state/settings';
 import airlock from '~/logic/api';
-import { useDark } from '~/logic/state/join';
 import { useChatStore, useReplyStore } from '~/logic/state/chat';
 import { AutocompletePatp } from './AutocompletePatp';
 import '../css/custom.css';
 import { parseEmojis } from '~/views/landscape/components/Graph/parse';
+import { useThemeWatcher } from '~/logic/lib/useThemeWatcher';
 
 export const SIG_REGEX = /(?:^|\s)(~)$/;
 export const MENTION_REGEX = /(?:^|\s)(~)(?![a-z]{6}\-[a-z]{6}[?=\s|$])(?![a-z]{6}[?=\s|$])([a-z\-]+)$/;
@@ -154,7 +154,7 @@ const ChatEditor = React.forwardRef<CodeMirrorShim, ChatEditorProps>(({
   group,
   association
 }, ref) => {
-  const dark = useDark();
+  const { theme } = useThemeWatcher();
   const editorRef = useRef<CodeMirrorShim>(null);
   useImperativeHandle(ref, () => editorRef.current);
   const editor = editorRef.current;
@@ -394,9 +394,9 @@ const ChatEditor = React.forwardRef<CodeMirrorShim, ChatEditorProps>(({
         height={`${Math.min((autocompleteSuggestions.length || 1) * 28 + 10, 94)}px`}
         overflowY="scroll"
         overflowX="visible"
-        background={dark ? 'black' : 'white'}
+        background={theme.colors.black}
         border="1px solid lightgray"
-        borderColor={dark ? 'black' : ''}
+        borderColor={theme.colors.black}
       >
         {<AutocompletePatp
           isAdmin={isAdmin}

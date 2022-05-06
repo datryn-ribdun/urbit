@@ -6,8 +6,8 @@ import { Dropdown } from '~/views/components/Dropdown';
 import { IoBookmark, IoBookmarkOutline } from 'react-icons/io5';
 import useMetadataState from '~/logic/state/metadata';
 import useSettingsState from '~/logic/state/settings';
-import { useDark } from '~/logic/state/join';
 import { quoteReply } from '~/logic/util/messages';
+import { useThemeWatcher } from '~/logic/lib/useThemeWatcher';
 import './MessageActions.scss';
 import { LinkCollection } from '../ChatResource';
 
@@ -31,8 +31,8 @@ const MessageActionItem = ({ onClick, color, children }: { onClick: () => void; 
 
 const MessageActions = ({ onReply, onDelete, onLike, onBookmark, msg, isAdmin, permalink, collections }) => {
   const { associations } = useMetadataState();
+  const { theme } = useThemeWatcher();
   const { bookmarks } = useSettingsState.getState();
-  const dark = useDark();
   const bookmarked = Boolean(bookmarks[permalink]);
   const [bookmarkSuccess, setBookmarkSuccess] = useState(bookmarked);
 
@@ -53,7 +53,7 @@ const MessageActions = ({ onReply, onDelete, onLike, onBookmark, msg, isAdmin, p
     setBookmarkSuccess(!bookmarked);
   }, [msg, permalink, bookmarked]);
 
-  const bookmarkStyle = { height: 16, width: 14, color: dark ? 'white' : 'black' };
+  const bookmarkStyle = { height: 16, width: 14, color: theme.colors.black };
   const bookmarkIcon = bookmarkSuccess
     ? <IoBookmark style={bookmarkStyle} className="actionIcon" />
     : <IoBookmarkOutline style={bookmarkStyle} className="actionIcon" />;

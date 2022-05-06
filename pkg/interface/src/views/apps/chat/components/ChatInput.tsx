@@ -14,11 +14,11 @@ import { Portal } from '~/views/components/Portal';
 import styled from 'styled-components';
 import { useOutsideClick } from '~/logic/lib/useOutsideClick';
 import { IS_MOBILE } from '~/logic/lib/platform';
-import { useDark } from '~/logic/state/join';
+import { parseEmojis } from '~/views/landscape/components/Graph/parse';
+import { useThemeWatcher } from '~/logic/lib/useThemeWatcher';
 import ChatEditor, { CodeMirrorShim, isMobile } from './ChatEditor';
 import { ChatAvatar } from './ChatAvatar';
 import './ChatInput.scss';
-import { parseEmojis } from '~/views/landscape/components/Graph/parse';
 
 const FixedOverlay = styled(Col)`
   position: fixed;
@@ -118,7 +118,7 @@ export const ChatInput = React.forwardRef(({
   const [inCodeMode, setInCodeMode] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const dark = useDark();
+  const { theme } = useThemeWatcher();
   const { message, setMessage } = useChatStore();
   const { reply, setReply } = useReplyStore();
   const { canUpload, uploading, promptUpload, onPaste } = useFileUpload({
@@ -195,11 +195,11 @@ export const ChatInput = React.forwardRef(({
   const [, patp] = reply.link.split('\n');
 
   const emojiPickerStyle = useMemo(() => ({
-    background: dark ? 'rgb(26,26,26)' : 'white',
-    color: dark ? 'white' : 'rgb(26,26,26)',
+    background: theme.colors.white,
+    color: theme.colors.black,
     boxShadow: '0 0 3px #efefef',
-    borderColor: dark ? 'black' : 'white'
-  }), [dark]);
+    borderColor: theme.colors.black
+  }), [theme]);
 
   return (
     <Box ref={outerRef}>

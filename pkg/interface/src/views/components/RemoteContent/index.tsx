@@ -73,7 +73,7 @@ export function RemoteContent(props: RemoteContentProps) {
   if (isImage && remoteContentPolicy.imageShown) {
     return (
       <RemoteContentWrapper {...wrapperProps} noOp={transcluded} replaced>
-        <RemoteContentImageEmbed url={url} />
+        <RemoteContentImageEmbed url={url} stretch />
       </RemoteContentWrapper>
     );
   } else if (isAudio && remoteContentPolicy.audioShown) {

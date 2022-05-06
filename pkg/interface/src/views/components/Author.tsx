@@ -3,9 +3,9 @@ import moment from 'moment';
 import React, { ReactElement, ReactNode } from 'react';
 import { IMAGE_NOT_FOUND } from '~/logic/constants/links';
 import { Sigil } from '~/logic/lib/sigil';
+import { useThemeWatcher } from '~/logic/lib/useThemeWatcher';
 import { citeNickname, uxToHex } from '~/logic/lib/util';
 import { useContact } from '~/logic/state/contact';
-import { useDark } from '~/logic/state/join';
 import useSettingsState, { selectCalmState, useShowNickname } from '~/logic/state/settings';
 import { PropFunc } from '~/types';
 import ProfileOverlay from './ProfileOverlay';
@@ -48,10 +48,10 @@ function Author(props: AuthorProps & PropFunc<typeof Box>): ReactElement {
   const size = props.size || 16;
   const sigilPadding = props.sigilPadding || 2;
 
-  const dark = useDark();
+  const { theme } = useThemeWatcher();
 
   const contact = useContact(ship);
-  const color = contact?.color ? `#${uxToHex(contact?.color)}` : dark ? '#000000' : '#FFFFFF';
+  const color = contact?.color ? `#${uxToHex(contact?.color)}` : theme.colors.black;
   const showNickname = useShowNickname(contact);
   const { hideAvatars } = useSettingsState(selectCalmState);
   const name = citeNickname(ship, showNickname, contact?.nickname);

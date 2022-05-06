@@ -9,6 +9,7 @@ import { IMAGE_NOT_FOUND } from '~/logic/constants/links';
 import { useIdlingState } from '~/logic/lib/idling';
 import { IS_MOBILE } from '~/logic/lib/platform';
 import { Sigil } from '~/logic/lib/sigil';
+import { useThemeWatcher } from '~/logic/lib/useThemeWatcher';
 import { citeNickname, daToUnix, useHovering, uxToHex } from '~/logic/lib/util';
 import { useContact } from '~/logic/state/contact';
 import { useDark } from '~/logic/state/join';
@@ -59,6 +60,7 @@ export const MessageAuthor = React.memo<any>(({
   ...props
 }) => {
   const dark = useDark();
+  const { theme } = useThemeWatcher();
   const { pals } = usePalsState();
   let contact: Contact | null = useContact(`~${msg.author}`);
 
@@ -78,9 +80,7 @@ export const MessageAuthor = React.memo<any>(({
   const shipName = citeNickname(msg.author, showNickname, contact?.nickname);
   const color = contact
     ? `#${uxToHex(contact.color)}`
-    : dark
-    ? '#000000'
-    : '#FFFFFF';
+    : theme.colors.black;
   const sigilClass = contact
     ? ''
     : dark

@@ -7,7 +7,6 @@ export function EmptyGroupHome(props) {
   const groupAssociation =
     (groupPath && associations.groups[groupPath]) || undefined;
 
-  const hasDescription = groupAssociation?.metadata?.description;
   const channelCount = Object.keys(associations?.graph ?? {}).filter((e) => {
     return associations?.graph?.[e]?.['group'] === groupPath;
   }).length;
@@ -21,7 +20,7 @@ export function EmptyGroupHome(props) {
     >
       { groupAssociation?.group ? (
         <GroupSummary
-          memberCount={groups[groupAssociation.group].members.size}
+          memberCount={groups[groupAssociation.group].members.length}
           locked={Boolean('invite' in groups[groupAssociation.group].policy)}
           channelCount={channelCount}
           metadata={groupAssociation.metadata}
