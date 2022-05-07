@@ -7,13 +7,13 @@ import { useQuery } from '~/logic/lib/useQuery';
 import { Titlebar } from '~/views/components/Titlebar';
 import useGraphState from '~/logic/state/graph';
 import useMetadataState from '~/logic/state/metadata';
+import { getPermalinkForGraph } from '~/logic/lib/permalinks';
+import { useCopy } from '~/logic/lib/useCopy';
 import useGroupState from '../../../logic/state/group';
 import { LinkBlocks } from './components/LinkBlocks';
 import { LinkDetail } from './components/LinkDetail';
 import './css/custom.css';
 import LinkWindow from './LinkWindow';
-import { getPermalinkForGraph } from '~/logic/lib/permalinks';
-import { useCopy } from '~/logic/lib/useCopy';
 
 interface LinkResourceProps {
   association: Association;

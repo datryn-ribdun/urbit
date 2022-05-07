@@ -22,10 +22,7 @@ export default function InfoScreen(props: any): ReactElement {
           <Text fontWeight={600} mt={3} mb={2}>New:</Text>
           <Text mt={1}></Text>
           <Text fontWeight={600} mt={3} mb={2}>Fixes:</Text>
-          <Text mt={1}>- Fix image sizing in chats</Text>
-          <Text mt={1}>- Group chats do not appear in messages if Focus Unread is selected and there are no new messages in them</Text>
-          <Text mt={1}>- Bookmark icon does not pull its color from the same place as the others</Text>
-          <Text mt={1}>- Number of participants missing in group summary</Text>
+          <Text mt={1}>- Fix collections freezing bug</Text>
           <Text mt={1}></Text>
           <H3 mt={4}>Chat Features</H3>
           <Text fontWeight={600} mt={3} mb={2}>Hover Options:</Text>

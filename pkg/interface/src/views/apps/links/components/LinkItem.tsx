@@ -20,7 +20,6 @@ import { Dropdown } from '~/views/components/Dropdown';
 import RemoteContent from '~/views/components/RemoteContent';
 import { PermalinkEmbed } from '../../permalinks/embed';
 import airlock from '~/logic/api';
-import useSettingsState from '~/logic/state/settings';
 
 interface LinkItemProps {
   node: GraphNode;
@@ -44,7 +43,6 @@ export const LinkItem = React.forwardRef((props: LinkItemProps, ref: RefObject<H
     return <Redirect to="/~404" />;
   }
 
-  const { putEntry } = useSettingsState.getState();
   const remoteRef = useRef<HTMLDivElement>(null);
   const setRef = useCallback((el: HTMLDivElement | null ) => {
     remoteRef.current = el;
@@ -60,14 +58,21 @@ export const LinkItem = React.forwardRef((props: LinkItemProps, ref: RefObject<H
   }, [resource, index]);
 
   useEffect(() => {
-    setTimeout(() => {
-      if(document.activeElement instanceof HTMLIFrameElement
-        // @ts-ignore forwardref prop passing
-        && remoteRef?.current?.containerRef?.contains(document.activeElement)) {
-        markRead();
-      }
-    });
-  }, []);
+    function onBlur() {
+      // FF will only update on next tick
+      setTimeout(() => {
+        if(document.activeElement instanceof HTMLIFrameElement
+          // @ts-ignore forwardref prop passing
+          && remoteRef?.current?.containerRef?.contains(document.activeElement)) {
+          markRead();
+        }
+      });
+    }
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('blur', onBlur);
+    };
+  }, [markRead]);
 
   const URLparser = new RegExp(
     /((?:([\w\d\.-]+)\:\/\/?){1}(?:(www)\.?){0,1}(((?:[\w\d-]+\.)*)([\w\d-]+\.[\w\d]+))){1}(?:\:(\d+)){0,1}((\/(?:(?:[^\/\s\?]+\/)*))(?:([^\?\/\s#]+?(?:.[^\?\s]+){0,1}){0,1}(?:\?([^\s#]+)){0,1})){0,1}(?:#([^#\s]+)){0,1}/
@@ -102,12 +107,6 @@ export const LinkItem = React.forwardRef((props: LinkItemProps, ref: RefObject<H
   const deleteLink = () => {
     if (confirm('Are you sure you want to delete this link?')) {
       airlock.poke(removePosts(`~${ship}`, name, [node.post.index]));
-
-      // If the default bookmark title changes, this will have to be found in some other way.
-      const permalinkText = node.post.contents.find(({ text }) => text?.includes('web+urbitgraph://'));
-      if (permalinkText?.text) {
-        putEntry('bookmarks', permalinkText.text, '');
-      }
     }
   };
 
@@ -119,13 +118,12 @@ export const LinkItem = React.forwardRef((props: LinkItemProps, ref: RefObject<H
   return (
     <Box
       mx="auto"
+      px={3}
       maxWidth="768px"
       ref={ref}
-      width="calc(100% - 32px)"
+      width="100%"
       opacity={node.post.pending ? '0.5' : '1'}
       {...rest}
-      backgroundColor="washedGray" p={2}
-      mb={3} borderRadius={4}
     >
       <Box
         lineHeight="tall"
@@ -139,7 +137,6 @@ export const LinkItem = React.forwardRef((props: LinkItemProps, ref: RefObject<H
         alignItems="flex-start"
         overflow="hidden"
         onClick={markRead}
-        bg="white"
       >
         {contents[0].text ? <Text p={2}>{contents[0].text}</Text> : null}
         { 'reference' in contents[1] ? (
@@ -165,27 +162,27 @@ export const LinkItem = React.forwardRef((props: LinkItemProps, ref: RefObject<H
           </Text>
         </>
       )}
-    </Box>
-    <Row minWidth={0} flexShrink={0} width="100%" justifyContent="space-between" py={2}>
+      </Box>
+      <Row minWidth={0} flexShrink={0} width="100%" justifyContent="space-between" py={3} bg="white">
       <Author
         showImage
+        isRelativeTime
         ship={author}
         date={node.post['time-sent']}
         group={group}
         lineHeight={1}
-        showDate
       />
       <Box ml="auto">
         <Link
           to={node.post.pending ? '#' : `${baseUrl}/index/${index}`}
           style={{ cursor: node.post.pending ? 'default' : 'pointer' }}
         >
-          <Box display='flex'>
-            <Icon color={commColor} icon='Chat' />
-            <Text color={commColor} ml={1}>{size}</Text>
-          </Box>
-        </Link>
-      </Box>
+        <Box display='flex'>
+          <Icon color={commColor} icon='Chat' />
+          <Text color={commColor} ml={1}>{size}</Text>
+        </Box>
+      </Link>
+        </Box>
 
       <Dropdown
         dropWidth="200px"
@@ -202,7 +199,7 @@ export const LinkItem = React.forwardRef((props: LinkItemProps, ref: RefObject<H
 
             {(ourRole === 'admin' || node.post.author === window.ship) &&
               <Row alignItems="center" p={1}>
-                <Action bg="transparent" m={1} color="red" destructive onClick={deleteLink}>Delete Link</Action>
+                <Action bg="white" m={1} color="red" destructive onClick={deleteLink}>Delete Link</Action>
               </Row>
             }
           </Col>
@@ -210,6 +207,7 @@ export const LinkItem = React.forwardRef((props: LinkItemProps, ref: RefObject<H
       >
         <Icon ml={2} display="block" icon="Ellipsis" color="gray" />
       </Dropdown>
+
     </Row>
   </Box>);
 });
