@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { AppName, Association, isWriter } from '@urbit/api';
 import { Box, Col, Icon, Row, Text } from '@tlon/indigo-react';
 import React, { ReactElement, ReactNode, useCallback, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 import urbitOb from 'urbit-ob';
 import { useResize } from '~/logic/lib/useResize';
@@ -75,6 +75,7 @@ export function ResourceSkeleton(props: ResourceSkeletonProps): ReactElement {
   const { groups } = useGroupState();
   const { associations } = useMetadataState();
   const { hideNicknames } = useSettingsState(selectCalmState);
+  const history = useHistory();
   const group = groups[association.group];
   let workspace = association.group;
   const [actionsWidth, setActionsWidth] = useState(0);
@@ -113,6 +114,9 @@ export function ResourceSkeleton(props: ResourceSkeletonProps): ReactElement {
     canWrite = isOwn;
   }
 
+  const isNote = history.location.pathname.match(/publish\/ship\/.+?\/note\//);
+  const notebookUrl = history.location.pathname.split('/').slice(0, -2).join('/');
+
   const backLink = (
     <Box
       borderRight={1}
@@ -122,9 +126,9 @@ export function ResourceSkeleton(props: ResourceSkeletonProps): ReactElement {
       mr='12px'
       my={1}
       flexShrink={0}
-      display={['block','none']}
+      display={['block', isNote ? 'block' : 'none']}
     >
-      <Link to={`/~landscape${workspace}`}>
+      <Link to={isNote ? notebookUrl : `/~landscape${workspace}`}>
         <Text>{'<- Back'}</Text>
       </Link>
     </Box>

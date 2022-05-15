@@ -20,9 +20,15 @@ export default function InfoScreen(props: any): ReactElement {
           <H2>EScape Info</H2>
           <H3 mt={4}>What&apos;s in v{version}</H3>
           <Text fontWeight={600} mt={3} mb={2}>New:</Text>
+          <Text mt={1}>- Notebook back button functionality available wherever you are in note</Text>
           <Text mt={1}></Text>
           <Text fontWeight={600} mt={3} mb={2}>Fixes:</Text>
-          <Text mt={1}>- Fix collections freezing bug</Text>
+          <Text mt={1}>- Notebook jumps down on load</Text>
+          <Text mt={1}>- Remove optimistic self-like from the hover menu</Text>
+          <Text mt={1}>- + button does not work to add new resources</Text>
+          <Text mt={1}>- My Apps should scroll</Text>
+          <Text mt={1}>- When replying to someone, the second line of text gets cut off at the bottom</Text>
+          <Text mt={1}>- Web + urbitgraph links for joining a group have double ~~</Text>
           <Text mt={1}></Text>
           <H3 mt={4}>Chat Features</H3>
           <Text fontWeight={600} mt={3} mb={2}>Hover Options:</Text>
@@ -42,6 +48,8 @@ export default function InfoScreen(props: any): ReactElement {
             <Icon icon="Menu" />
             <Text ml={2}>Opens additional options to reply, copy the message link, and (if author or admin) delete the message</Text>
           </Row>
+          <Text fontWeight={600} mt={3} mb={2}>Push Notifications:</Text>
+          <Text mt={1}>{'- To enable notification details in addition to the notification title, go to System Preferences > Notifications > Show details in push notifications'}</Text>
           <Text fontWeight={600} mt={3} mb={2}>Mentions:</Text>
           <Text mt={1}>- Start typing &apos;~&apos; to open the mention selector</Text>
           <Text mt={1}>- Navigate using the up and down arrows</Text>

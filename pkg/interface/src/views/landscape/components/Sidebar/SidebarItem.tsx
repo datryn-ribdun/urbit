@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React, { MouseEvent, ReactNode } from 'react';
 import urbitOb from 'urbit-ob';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { Icon, Row, Box, Text, BaseImage } from '@tlon/indigo-react';
 import { Association, cite, deSig } from '@urbit/api';
 import { HoverBoxLink } from '~/views/components/HoverBox';
@@ -176,15 +176,12 @@ export function SidebarItemBase(props: {
             <Icon color="gray" icon="Locked" size={14} ml={hasUnread ? 0 : '6px'} mr="6px" />
           )}
         </Row>
-        {isAdmin && (
-          <Box onClick={() => history.push(`${to}/new`)}>
-            <Row display="flex" alignItems="center">
-              <Icon icon="Plus" color="gray" pl={1} />
-            </Row>
-          </Box>
-        )}
-        {isApps && (
-          <Box onClick={() => history.push(`${to}/new`)}>
+        {(isAdmin || isApps) && (
+          <Box onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            history.push(`${to}/new`);
+          }}>
             <Row display="flex" alignItems="center">
               <Icon icon="Plus" color="gray" pl={1} />
             </Row>

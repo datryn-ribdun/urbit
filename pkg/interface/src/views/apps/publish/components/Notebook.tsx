@@ -1,6 +1,6 @@
 import { Box, Button, Col, Row, Text } from '@tlon/indigo-react';
 import { Association, Graph } from '@urbit/api';
-import React, { ReactElement, useCallback } from 'react';
+import React, { ReactElement, useCallback, useRef } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import useContactState from '~/logic/state/contact';
 import useGroupState from '~/logic/state/group';
@@ -26,6 +26,11 @@ export function Notebook(props: NotebookProps & RouteComponentProps): ReactEleme
     graph
   } = props;
 
+  const scrollRef = useRef(null);
+  const focusScroll = () => {
+    scrollRef?.current?.focus();
+  };
+
   const groups = useGroupState(state => state.groups);
   const contacts = useContactState(state => state.contacts);
 
@@ -44,7 +49,7 @@ export function Notebook(props: NotebookProps & RouteComponentProps): ReactEleme
   }
 
   return (
-    <Col gapY={4} pt={4} mx="auto" px={3} maxWidth="768px">
+    <Col gapY={4} pt={4} mx="auto" px={3} maxWidth="768px" tabIndex={0} ref={scrollRef} onMouseEnter={focusScroll}>
       <Row justifyContent="space-between">
         <Box>
           <Text display='block'>{association.metadata?.title}</Text>

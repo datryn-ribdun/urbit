@@ -12,7 +12,7 @@ import { useQuery } from '~/logic/lib/useQuery';
 import { sortGroupsAlph } from '~/views/apps/launch/components/Groups';
 import { SidebarItemBase } from './SidebarItem';
 import { GroupOrder, SidebarGroupSorter } from './SidebarGroupSorter';
-import {  SidebarGroup } from './SidebarGroup';
+import { SidebarGroup } from './SidebarGroup';
 import { SidebarFolder } from './SidebarFolder';
 import { MyApps } from './MyApps';
 

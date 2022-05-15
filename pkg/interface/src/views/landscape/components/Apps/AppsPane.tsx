@@ -10,6 +10,7 @@ import { EXCLUDED_DESKS } from '../Sidebar/MyApps';
 import { Tile } from './AppTile';
 import { Box, Col, Icon, Row, Text } from '@tlon/indigo-react';
 import { IS_MOBILE } from '~/logic/lib/platform';
+import { ScrollbarLessBox } from '~/views/apps/launch/App';
 
 interface AppsPaneProps {
   baseUrl: string;
@@ -116,11 +117,13 @@ export function AppsPane(props: AppsPaneProps) {
                 recentGroups={[]}
                 baseUrl={baseUrl}
               >
-                <Row flexWrap="wrap">
-                  {chargesList.map(charge => (
-                    <Tile key={charge.desk} desk={charge.desk} charge={charge} />
-                  ))}
-                </Row>
+                <ScrollbarLessBox overflow="scroll" pb={4}>
+                  <Row flexWrap="wrap">
+                    {chargesList.map(charge => (
+                      <Tile key={charge.desk} desk={charge.desk} charge={charge} />
+                    ))}
+                  </Row>
+                </ScrollbarLessBox>
               </Skeleton>
             </>
           );

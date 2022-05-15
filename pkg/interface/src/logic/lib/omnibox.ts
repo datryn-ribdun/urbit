@@ -1,6 +1,5 @@
 import { isChannelAdmin } from '@urbit/api';
 import { cite } from '~/logic/lib/util';
-import { createJoinParams } from '~/views/landscape/components/Join/Join';
 
 const makeIndexes = () => new Map([
     ['ships', []],

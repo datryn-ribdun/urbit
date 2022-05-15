@@ -33,7 +33,6 @@ export function useFileUpload({ multiple = true, ...params }: useFileUploadParam
   } = storage;
   const [source, setSource] = useState<FileUploadSource>('paste');
 
-
   const uploadFiles = useCallback((files: FileList | File[], uploadSource: FileUploadSource) => {
     if (isFileUploadHandler(params)) {
       return params.onFiles(files, storage, uploadSource);

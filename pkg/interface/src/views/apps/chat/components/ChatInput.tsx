@@ -54,7 +54,7 @@ const InputBox: FC<{ isReply: boolean; children?: ReactNode; }> = ({ isReply, ch
     backgroundColor="white"
     className="cf"
     zIndex={0}
-    height={isReply ? `${IS_MOBILE ? 100 : 84}px` : 'auto'}
+    height={isReply && IS_MOBILE ? '100px' : 'auto'}
   >
     { children }
   </Col>

@@ -95,9 +95,6 @@ export function Note(props: NoteProps & RouteComponentProps) {
       gridRowGap={4}
       mx="auto"
     >
-      <Link to={rootUrl}>
-        <Text>{'<- Notebook Index'}</Text>
-      </Link>
       <Col>
         <Text display="block" mb={2}>{title || ''}</Text>
         <Row alignItems="center" maxWidth="500px">

@@ -270,7 +270,7 @@ export function JoinPrompt(props: JoinPromptProps) {
   };
 
   const onSubmit = async ({ link }: PromptFormSchema) => {
-    const path = `/ship/${preSig(link)}`;
+    const path = `/ship/${link}`;
     history.push({
       search: appendQuery({ 'join-path': path })
     });
@@ -398,7 +398,7 @@ export function JoinRoute() {
   if (!kind) {
     return null;
   }
-
+  
   const desc: JoinDesc = path
     ? {
         group: path,

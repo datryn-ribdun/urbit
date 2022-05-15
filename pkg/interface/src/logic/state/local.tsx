@@ -12,6 +12,7 @@ export type SubscriptionStatus = 'connected' | 'disconnected' | 'reconnecting';
 
 export interface LocalState {
   browserId: string;
+  mobileAppVersion?: string;
   theme: 'light' | 'dark' | 'auto';
   hideAvatars: boolean;
   hideNicknames: boolean;

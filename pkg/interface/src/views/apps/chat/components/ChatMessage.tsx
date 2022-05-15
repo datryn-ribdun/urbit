@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import { BaseImage, Box, Icon, Row, Rule, Text } from '@tlon/indigo-react';
-import { Contact, MentionContent, Post } from '@urbit/api';
+import { Contact, deSig, MentionContent, Post } from '@urbit/api';
 import bigInt from 'big-integer';
 import moment from 'moment';
 import React, { Ref, useCallback, useEffect, useMemo, useState } from 'react';
@@ -314,7 +314,7 @@ const MessageWrapper = (props) => {
   const [isLiked, setIsLiked] = useState(didLike);
 
   const likeMessage = useCallback((msg) => {
-    if (isLiked && !didLike) {
+    if ((isLiked && !didLike) || deSig(msg.author) === window.ship) {
       return;
     }
     onLike(msg);
@@ -333,7 +333,7 @@ const MessageWrapper = (props) => {
     >
       {props.children}
       {onLike && <LikeIndicator {...{ transcluded, isLiked, didLike, dark, likers, showLikers: IS_MOBILE && hovering }} onLike={() => likeMessage(msg)} />}
-      {showHover ? <MessageActions {...{ ...props, onLike: onLike && likeMessage }} /> : null}
+      {showHover ? <MessageActions {...{ ...props, onLike: onLike ? likeMessage : undefined }} /> : null}
     </Box>
   );
 };

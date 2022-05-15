@@ -7,6 +7,7 @@ declare global {
     desk: string;
     hark: typeof useHarkState.getState;
     isMobileApp: boolean;
+    mobileAppVersion?: string;
     bootstrapApi: Function;
   }
 }
