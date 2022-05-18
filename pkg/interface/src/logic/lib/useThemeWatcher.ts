@@ -57,31 +57,37 @@ export function useThemeWatcher() {
     const updateMedium = (e: MediaQueryListEvent) => set(s => ({ breaks: { md: e.matches } }));
     const updateLarge = (e: MediaQueryListEvent) => set(s => ({ breaks: { lg: e.matches } }));
 
-    const themeWatcher = window.matchMedia('(prefers-color-scheme: dark)');
-    const mobileWatcher = window.matchMedia(`(max-width: ${theme.breakpoints[0]})`);
-    const smallWatcher = window.matchMedia(`(min-width: ${theme.breakpoints[0]})`);
-    const mediumWatcher = window.matchMedia(`(min-width: ${theme.breakpoints[1]})`);
-    const largeWatcher = window.matchMedia(`(min-width: ${theme.breakpoints[2]})`);
+      const themeWatcher = window.matchMedia('(prefers-color-scheme: dark)');
+      const mobileWatcher = window.matchMedia(`(max-width: ${theme.breakpoints[0]})`);
+      const smallWatcher = window.matchMedia(`(min-width: ${theme.breakpoints[0]})`);
+      const mediumWatcher = window.matchMedia(`(min-width: ${theme.breakpoints[1]})`);
+      const largeWatcher = window.matchMedia(`(min-width: ${theme.breakpoints[2]})`);
 
-    themeWatcher.addEventListener('change', updateTheme);
-    mobileWatcher.addEventListener('change', updateMobile);
-    smallWatcher.addEventListener('change', updateSmall);
-    mediumWatcher.addEventListener('change', updateMedium);
-    largeWatcher.addEventListener('change', updateLarge);
+    if (themeWatcher?.addEventListener &&
+      mobileWatcher?.addEventListener &&
+      smallWatcher?.addEventListener &&
+      mediumWatcher?.addEventListener &&
+      largeWatcher?.addEventListener) {
+      themeWatcher.addEventListener('change', updateTheme);
+      mobileWatcher.addEventListener('change', updateMobile);
+      smallWatcher.addEventListener('change', updateSmall);
+      mediumWatcher.addEventListener('change', updateMedium);
+      largeWatcher.addEventListener('change', updateLarge);
 
-    updateTheme({ matches: themeWatcher.matches } as MediaQueryListEvent);
-    updateMobile({ matches: mobileWatcher.matches } as MediaQueryListEvent);
-    updateSmall({ matches: smallWatcher.matches } as MediaQueryListEvent);
-    updateMedium({ matches: mediumWatcher.matches } as MediaQueryListEvent);
-    updateLarge({ matches: largeWatcher.matches } as MediaQueryListEvent);
+      updateTheme({ matches: themeWatcher.matches } as MediaQueryListEvent);
+      updateMobile({ matches: mobileWatcher.matches } as MediaQueryListEvent);
+      updateSmall({ matches: smallWatcher.matches } as MediaQueryListEvent);
+      updateMedium({ matches: mediumWatcher.matches } as MediaQueryListEvent);
+      updateLarge({ matches: largeWatcher.matches } as MediaQueryListEvent);
 
-    return () => {
-      themeWatcher.removeEventListener('change', updateTheme);
-      mobileWatcher.removeEventListener('change', updateMobile);
-      smallWatcher.removeEventListener('change', updateSmall);
-      mediumWatcher.removeEventListener('change', updateMedium);
-      largeWatcher.removeEventListener('change', updateLarge);
-    };
+      return () => {
+        themeWatcher.removeEventListener('change', updateTheme);
+        mobileWatcher.removeEventListener('change', updateMobile);
+        smallWatcher.removeEventListener('change', updateSmall);
+        mediumWatcher.removeEventListener('change', updateMedium);
+        largeWatcher.removeEventListener('change', updateLarge);
+      };
+    }
   }, []);
 
   return {
