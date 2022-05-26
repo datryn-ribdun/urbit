@@ -120,7 +120,7 @@ export function GroupSwitcher(props: {
         alignItems="center"
         justifyContent="space-between"
         flexShrink={0}
-        height='48px'
+        height='47px'
         backgroundColor="white"
         position="sticky"
         top="0px"

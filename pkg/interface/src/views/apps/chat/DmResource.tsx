@@ -154,7 +154,7 @@ export function DmResource(props: DmResourceProps) {
         gapX="3"
         flexShrink={0}
         alignItems="center"
-        height="6"
+        height="49px"
         borderBottom="1"
         borderBottomColor="lightGray"
         justifyContent="space-between"

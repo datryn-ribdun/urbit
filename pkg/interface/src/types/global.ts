@@ -9,5 +9,7 @@ declare global {
     isMobileApp: boolean;
     mobileAppVersion?: string;
     bootstrapApi: Function;
+    toggleOmnibox: Function;
+    routeToHome: Function;
   }
 }

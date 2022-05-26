@@ -20,9 +20,9 @@ export default function InfoScreen(props: any): ReactElement {
           <H2>EScape Info</H2>
           <H3 mt={4}>What&apos;s in v{version}</H3>
           <Text fontWeight={600} mt={3} mb={2}>New:</Text>
+          <Text mt={1}>- Updates to support mobile app changes</Text>
           <Text mt={1}></Text>
           <Text fontWeight={600} mt={3} mb={2}>Fixes:</Text>
-          <Text mt={1}>- Fix mobile app unable to load</Text>
           <Text mt={1}></Text>
           <H3 mt={4}>Chat Features</H3>
           <Text fontWeight={600} mt={3} mb={2}>Hover Options:</Text>

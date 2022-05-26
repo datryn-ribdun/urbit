@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Helmet from 'react-helmet';
 import { Router, withRouter } from 'react-router-dom';
-import styled, { StyledComponent, ThemeProvider } from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { svgDataURL } from '~/logic/lib/util';
 import history from '~/logic/lib/history';
@@ -94,7 +94,6 @@ const StatusBarWithRouter = withRouter(StatusBar);
 
 const App: React.FunctionComponent = () => {
   const { theme, display } = useThemeWatcher();
-  const { mobileAppVersion } = useLocalState();
 
   React.useEffect(() => {
     getId().then((value) => {
@@ -102,8 +101,6 @@ const App: React.FunctionComponent = () => {
       useLocalState.setState({ mobileAppVersion: window.mobileAppVersion });
     });
   }, []);
-
-  const showMobileNavbar = IS_MOBILE && (!mobileAppVersion ||  mobileAppVersion <= '1.1.2');
 
   return (
     <ThemeProvider theme={theme}>
@@ -124,9 +121,9 @@ const App: React.FunctionComponent = () => {
           <ErrorBoundary>
             <Content />
           </ErrorBoundary>
-          {showMobileNavbar && <ErrorBoundary>
+          <ErrorBoundary>
             <MobileNavbar />
-          </ErrorBoundary>}
+          </ErrorBoundary>
         </Router>
       </Root>
       <div id="portal-root" />

@@ -5,7 +5,7 @@ import UqbarLogo from '~/assets/img/uqbar-logo.png';
 import useLocalState, { selectLocalState } from '~/logic/state/local';
 import useHarkState from '~/logic/state/hark';
 import { useDmUnreads } from '~/logic/lib/useDmUnreads';
-import { isMobileApp } from '~/logic/lib/platform';
+import { isMobileApp, IS_MOBILE } from '~/logic/lib/platform';
 import { bootstrapApi } from '~/logic/api/bootstrap';
 
 const localSel = selectLocalState(['toggleOmnibox']);
@@ -13,7 +13,17 @@ const localSel = selectLocalState(['toggleOmnibox']);
 export const APP_NAVBAR_HEIGHT = 60;
 export const WEB_NAVBAR_HEIGHT = 50;
 
-export const getNavbarHeight = () => isMobileApp() ? APP_NAVBAR_HEIGHT : WEB_NAVBAR_HEIGHT;
+export const getNavbarHeight = () => {
+  if (isMobileApp()) {
+    if (window.mobileAppVersion && window.mobileAppVersion >= '1.2.0') {
+      return 0;
+    } else {
+      return APP_NAVBAR_HEIGHT;
+    }
+  } else {
+    return WEB_NAVBAR_HEIGHT;
+  }
+};
 
 type NavItemIcon = 'Home' | 'Messages' | 'Notifications' | 'ArrowRefresh' | 'Menu';
 
@@ -75,6 +85,9 @@ export function MobileNavbar() {
   const { notificationsCount } = useHarkState();
   const { unreadDmCount } = useDmUnreads();
   const [currentPathname, setCurrentPathname] = useState(history.location.pathname);
+  const { mobileAppVersion } = useLocalState();
+  const mobileAppV = window.mobileAppVersion || mobileAppVersion;
+  const showMobileNavbar = IS_MOBILE && (!mobileAppV ||  mobileAppV <= '1.1.2');
 
   useEffect(() => {
     const { innerWidth, innerHeight } = window;
@@ -93,7 +106,12 @@ export function MobileNavbar() {
 
     style.type = 'text/css';
     style.appendChild(document.createTextNode(css));
-   }, []);
+    window.routeToHome = () => history.replace('/');
+  }, []);
+
+  useEffect(() => {
+    window.toggleOmnibox = toggleOmnibox;
+  }, [toggleOmnibox]);
 
   const options: NavItemLinkProps[] = useMemo(() => [
     {
@@ -136,6 +154,10 @@ export function MobileNavbar() {
   const getNotifications = (icon: string) : number => (icon === 'Notifications' && Math.max(0, notificationsCount - unreadDmCount))
     || (icon === 'Messages' && unreadDmCount)
     || 0;
+
+  if (!showMobileNavbar) {
+    return null;
+  }
 
   return (
     <Row className="mobileNavbar" backgroundColor="white" height={`${getNavbarHeight()}px`}>

@@ -18,8 +18,7 @@ import { SidebarGroupList } from './SidebarGroupList';
 import { getEntryTitle, GroupOrder } from './SidebarGroupSorter';
 import { markEachAsRead } from '@urbit/api';
 
-export const FOLDER_FOCUS_HEIGHT = 40;
-export const HEADER_HEIGHT = 50 + FOLDER_FOCUS_HEIGHT;
+const FOLDER_FOCUS_HEIGHT = 30;
 
 const ScrollbarLessCol = styled(Col)`
   scrollbar-width: none !important;
@@ -44,6 +43,8 @@ export function Sidebar({ baseUrl, selected, workspace, recentGroups }: SidebarP
   const [changingSort, setChangingSort] = useState(false);
   const { groupSorter, putEntry } = useSettingsState.getState();
   const [groupOrder, setGroupOrder] = useState<GroupOrder>(JSON.parse(groupSorter.order || '[]'));
+
+  const HEADER_HEIGHT = 60 + FOLDER_FOCUS_HEIGHT;
 
   const [showOnlyUnread, setShowOnlyUnread] = useLocalStorageState(
     'showOnlyUnread', false

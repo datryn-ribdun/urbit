@@ -32,14 +32,14 @@ export const Content = () => {
   const location = useLocation();
   const mdLoaded = useMetadataState(s => s.loaded);
   const inviteLoaded = useInviteState(s => s.loaded);
-  const { mobileAppVersion } = useLocalStorageState();
+  const { mobileAppVersion } = useLocalStorageState('mobileAppVersion', window.mobileAppVersion);
 
   useEffect(() => {
     return history.block((location, action) => {
       postReactNativeMessage({ type: 'navigation-change', pathname: location.pathname });
 
       const block = IS_MOBILE &&
-        mobileAppVersion && mobileAppVersion >= '1.1.3' &&
+        mobileAppVersion && mobileAppVersion >= '1.2.0' &&
         location.pathname.includes('~landscape/messages/') &&
         location.pathname.includes('~notifications');
 
