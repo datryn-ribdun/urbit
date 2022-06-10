@@ -152,7 +152,6 @@ const selBrowserSettings = (s: GardenSettingsState) =>
   s.browserSettings.settings;
 export function useBrowserSettings() {
   const settings = useGardenSettingsState(selBrowserSettings);
-  console.log({ settings });
   return settings !== '' ? JSON.parse(settings) : [];
 }
 

@@ -15,7 +15,7 @@ export function getPermalinkForGraph(
   return `${groupLink}/graph/${ship}/${name}${index}`;
 }
 
-function getPermalinkForAssociatedGroup(group: string) {
+export function getPermalinkForAssociatedGroup(group: string) {
   const { ship, name } = resourceFromPath(group);
   return `web+urbitgraph://group/${ship}/${name}`;
 }

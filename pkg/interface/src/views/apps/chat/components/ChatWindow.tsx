@@ -268,6 +268,7 @@ class ChatWindow extends Component<
     const graphIdx = keys.findIndex(idx => idx.eq(index));
     const prevIdx = keys[graphIdx - 1];
     const nextIdx = keys[graphIdx + 1];
+
     const isLastRead: boolean = this.state.unreadIndex.eq(index);
     const props = {
       highlighted,

@@ -16,7 +16,6 @@ interface FormSchema {
 
 export function EnableGroupFeed(props: {
   groupPath: string;
-  dismiss?: () => void;
   baseUrl: string;
 }) {
   const { groupPath, baseUrl } = props;

@@ -1,18 +1,19 @@
 import { Box, Button, Col, H3, Icon, Row, Text } from '@tlon/indigo-react';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IS_MOBILE } from '~/logic/lib/platform';
 import { useLocalStorageState } from '~/logic/lib/useLocalStorageState';
 import { uxToHex } from '~/logic/lib/util';
 import { getGroupFromWorkspace, getTitleFromWorkspace } from '~/logic/lib/workspace';
 import useMetadataState from '~/logic/state/metadata';
-import { useMedia } from '~/logic/lib/useMedia';
 import { Workspace } from '~/types/workspace';
 import { Dropdown } from '~/views/components/Dropdown';
 import { MetadataIcon } from './MetadataIcon';
 import { GroupOrder } from './Sidebar/SidebarGroupSorter';
 import { TitleActions } from './Sidebar/TitleActions';
 import { SidebarListConfig } from './Sidebar/types';
+import { useCopy } from '~/logic/lib/useCopy';
+import { getPermalinkForAssociatedGroup } from '~/logic/lib/permalinks';
 
 const GroupSwitcherItem = ({ to, children, bottom = false, ...rest }) => (
 <Link to={to}>
@@ -81,13 +82,13 @@ export function GroupSwitcher(props: {
   saveGroupOrder: (groupOrder: GroupOrder) => void;
   setChangingSort: (sort: boolean) => void;
 }) {
-  const isMobile = useMedia('(max-width: 639px)');
-  const path = isMobile ? '/popover' : '/popover/settings';
   const inputRef = useRef<HTMLElement>();
   const { workspace, isAdmin, changingSort, setChangingSort, groupOrder, saveGroupOrder } = props;
   const associations = useMetadataState(state => state.associations);
   const title = getTitleFromWorkspace(associations, workspace);
   const groupPath = getGroupFromWorkspace(workspace);
+  const permalink = useMemo(() => workspace.group && getPermalinkForAssociatedGroup(workspace.group), [workspace]);
+  const { doCopy, copyDisplay } = useCopy(permalink, <Icon icon='Copy' color='gray' pl={2} />, <Icon icon='Checkmark' color='gray' pl={2} />);
   const [folder, setFolder] = useState('');
   const showTitleActions = NON_GROUP_WORKSPACES.includes(workspace.type);
   const metadata = showTitleActions
@@ -194,7 +195,7 @@ export function GroupSwitcher(props: {
         height="100%"
       >
         <Row flexGrow={1} alignItems="center" justifyContent="space-between">
-        <Dropdown
+          <Dropdown
             width="100%"
             dropWidth="231px"
             alignY="top"
@@ -282,12 +283,15 @@ export function GroupSwitcher(props: {
                     display="inline-block"
                     color='blue'
                     icon="Users"
-                    ml='12px'
+                    ml={2}
                   />
                 </Link>)}
                 <Link to={navTo('/popover/settings')}>
-                  <Icon color='gray' display="inline-block" ml={'12px'} icon="Gear" />
+                  <Icon color='gray' display="inline-block" ml={2} icon="Gear" />
                 </Link>
+                <Box onClick={doCopy} cursor="pointer">
+                  {copyDisplay}
+                </Box>
               </>
             )}
           </Row>

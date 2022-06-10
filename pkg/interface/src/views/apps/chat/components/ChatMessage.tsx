@@ -21,6 +21,8 @@ import { LinkCollection } from '../ChatResource';
 import { CodeMirrorShim } from './ChatEditor';
 import { LikeIndicator } from './LikeIndicator';
 import MessageActions from './MessageActions';
+import ChatArrowDown from '~/assets/img/chat-arrow-down.svg';
+import ChatArrowUp from '~/assets/img/chat-arrow-up.svg';
 
 export const DATESTAMP_FORMAT = '[~]YYYY.M.D';
 
@@ -190,7 +192,7 @@ export const MessageAuthor = React.memo<any>(({
 MessageAuthor.displayName = 'MessageAuthor';
 
 type MessageProps = { timestamp: string; timestampHover: boolean; }
-  & Pick<ChatMessageProps, 'msg' | 'transcluded' | 'showOurContact' | 'isReply' | 'onLike' | 'inputRef'>
+  & Pick<ChatMessageProps, 'msg' | 'transcluded' | 'showOurContact' | 'isReply' | 'onLike' | 'inputRef' | 'showReplyUp' | 'showReplyDown'>
 
 export const Message = React.memo(({
   timestamp,
@@ -199,15 +201,19 @@ export const Message = React.memo(({
   transcluded,
   showOurContact,
   inputRef,
-  isReply = false
+  isReply = false,
+  showReplyDown = false,
+  showReplyUp = false
 }: MessageProps) => {
+  const { theme } = useThemeWatcher();
   const { hovering, bind } = useHovering();
   // TODO: add an additional check for links-only messages to remove the Triangle icon
   const defaultCollapsed = isReply && transcluded > 0;
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const showReplyStyle = { position: 'absolute', top: 2, left: 15, height: 16, width: 16, fill: theme.colors.black };
 
   return (
-    <Row width="100%"
+    <Row width="100%" position="relative"
       onClick={(e) => {
         if (collapsed) {
           e.preventDefault();
@@ -230,6 +236,12 @@ export const Message = React.memo(({
           }}
           icon={collapsed ? 'TriangleEast' : 'TriangleSouth'}
         />
+      )}
+      {(!defaultCollapsed && showReplyUp) && (
+        <ChatArrowUp style={showReplyStyle} />
+      )}
+      {(!defaultCollapsed && showReplyDown) && (
+        <ChatArrowDown style={showReplyStyle} />
       )}
       <Box pl={defaultCollapsed ? '0px' : '44px'} pr={4} width="calc(100% - 44px)" position='relative'>
         {timestampHover ? (
@@ -340,6 +352,7 @@ const MessageWrapper = (props) => {
 
 interface ChatMessageProps {
   msg: Post;
+  showOurContact: boolean;
   previousMsg?: Post;
   nextMsg?: Post;
   isLastRead?: boolean;
@@ -354,7 +367,8 @@ interface ChatMessageProps {
   highlighted?: boolean;
   renderSigil?: boolean;
   hideHover?: boolean;
-  showOurContact: boolean;
+  showReplyDown?: boolean;
+  showReplyUp?: boolean;
   dismissUnread?: () => void;
   innerRef: (el: HTMLDivElement | null) => void;
   onReply?: (msg: Post) => void;
@@ -371,6 +385,7 @@ function ChatMessage(props: ChatMessageProps) {
   const {
     msg,
     nextMsg,
+    previousMsg,
     isLastRead = false,
     className = '',
     isPending = false,
@@ -455,13 +470,16 @@ function ChatMessage(props: ChatMessageProps) {
     isAdmin,
     likers,
     didLike,
-    collections
+    collections,
   };
+
+  const showReplyDown = Boolean(previousMsg?.contents?.find(c => c?.reference?.graph?.index === msg.index));
+  const showReplyUp = Boolean(msg?.contents?.find(c => nextMsg?.index && c?.reference?.graph?.index === nextMsg?.index));
 
   const message = useMemo(() => (
     <Message
       timestampHover={!renderSigil}
-      {...{ msg, timestamp, transcluded, showOurContact, isReply, inputRef }}
+      {...{ msg, timestamp, transcluded, showOurContact, isReply, inputRef, showReplyDown, showReplyUp }}
     />
   ), [renderSigil, msg, timestamp, transcluded, showOurContact]);
 

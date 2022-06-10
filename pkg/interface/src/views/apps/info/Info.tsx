@@ -20,9 +20,14 @@ export default function InfoScreen(props: any): ReactElement {
           <H2>EScape Info</H2>
           <H3 mt={4}>What&apos;s in v{version}</H3>
           <Text fontWeight={600} mt={3} mb={2}>New:</Text>
-          <Text mt={1}>- Updates to support mobile app changes</Text>
+          <Text mt={1}>- Copy group button</Text>
+          <Text mt={1}>- Show Note date on mobile</Text>
+          <Text mt={1}>- Add icon to indicate that a replied-to message is linked to the message right below it</Text>
           <Text mt={1}></Text>
           <Text fontWeight={600} mt={3} mb={2}>Fixes:</Text>
+          <Text mt={1}>- “dismiss is not a function” in Join.tsx</Text>
+          <Text mt={1}>- Input scroll does not allow you to see top of long a message</Text>
+          <Text mt={1}>- Fix the collection loading issue and add automatic mark-as-read</Text>
           <Text mt={1}></Text>
           <H3 mt={4}>Chat Features</H3>
           <Text fontWeight={600} mt={3} mb={2}>Hover Options:</Text>

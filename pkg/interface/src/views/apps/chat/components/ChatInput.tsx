@@ -62,8 +62,8 @@ const InputBox: FC<{ isReply: boolean; children?: ReactNode; }> = ({ isReply, ch
 
 const IconBox = ({ children, ...props }) => (
   <Box
-    ml="12px"
-    mr={3}
+    ml={1}
+    mr="14px"
     flexShrink={0}
     height="16px"
     width="16px"
@@ -257,7 +257,7 @@ export const ChatInput = React.forwardRef(({
               onPaste={(cm, e) => onPaste(e)}
               {...{ submit, placeholder, isAdmin, group, association, setShowEmojiPicker }}
             />
-            <IconBox mr={canUpload ? '12px' : 3}>
+            <IconBox mr={canUpload ? '10px' : 3}>
               <Icon
                 icon="Dojo"
                 cursor="pointer"

@@ -193,8 +193,7 @@ export interface JoinProps {
   dismiss?: () => void;
 }
 
-export function Join(props: JoinProps) {
-  const { desc, modal, dismiss, redir } = props;
+export function Join({ desc, modal, dismiss = () => null, redir }: JoinProps) {
   const { group, kind } = desc;
   const [, , ship, name] = group.split('/');
   const graph = kind === 'graph';
@@ -262,7 +261,7 @@ export interface JoinPromptProps {
 }
 
 export function JoinPrompt(props: JoinPromptProps) {
-  const { dismiss } = props;
+  const { dismiss = () => null } = props;
   const { appendQuery } = useQuery();
   const history = useHistory();
   const initialValues = {

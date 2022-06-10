@@ -75,7 +75,7 @@ return null;
           color={color}
           lineHeight={lineHeight}
           fontSize={fontSize}
-          display={time ? ['none', hovering ? 'block' : 'none'] : 'block'}
+          display={time && !hovering ? 'none' : 'block'}
         >
           {time ? '\u00A0' : ''}
           {datestamp}
